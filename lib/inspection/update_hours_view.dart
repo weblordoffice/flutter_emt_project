@@ -4,15 +4,13 @@ import 'package:emtrack/controllers/update_hours_controller.dart';
 import 'package:emtrack/utils/app_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:emtrack/routes/app_pages.dart';
 
 class UpdateHoursView extends StatelessWidget {
   UpdateHoursView({super.key});
 
   final UpdateHoursController updatectrl = Get.put(UpdateHoursController());
-  final SelectedAccountController selectedCtrl = Get.put(
-    SelectedAccountController(),
-  );
+  final SelectedAccountController selectedCtrl =
+  Get.put(SelectedAccountController());
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +36,7 @@ class UpdateHoursView extends StatelessWidget {
             _label("Selected Parent Account"),
             const SizedBox(height: 4),
             Obx(
-              () => Text(
+                  () => Text(
                 "${selectedCtrl.parentAccountName.value} - ${selectedCtrl.locationName.value}",
                 style: const TextStyle(
                   color: Colors.red,
@@ -54,7 +52,7 @@ class UpdateHoursView extends StatelessWidget {
             _label("Vehicle ID"),
             const SizedBox(height: 4),
             Obx(
-              () => Text(
+                  () => Text(
                 updatectrl.vehicleNumber.value,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
@@ -83,6 +81,10 @@ class UpdateHoursView extends StatelessWidget {
                   controller: updatectrl.surveyDateController,
                   decoration: InputDecoration(
                     hintText: "Select Date",
+                    suffixIcon: const Icon(
+                      Icons.calendar_month,
+                      color: Colors.red,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide(
@@ -105,26 +107,25 @@ class UpdateHoursView extends StatelessWidget {
             _label("Last Recorded Hours"),
             const SizedBox(height: 10),
             Obx(
-              () => _disabledField(
+                  () => _disabledField(
                 updatectrl.lastRecordedHours.value.toStringAsFixed(2),
               ),
             ),
 
             const SizedBox(height: 20),
 
-            // ─── Change Tire Details ───
-            _requiredLabel("Change Tire Details"),
+            // ─── Update Hours ───
+            _requiredLabel("Update Hours"),
             const SizedBox(height: 10),
             Obx(
-              () => TextField(
+                  () => TextField(
                 controller: updatectrl.updateHoursController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+                keyboardType:
+                const TextInputType.numberWithOptions(decimal: true),
                 // ✅ FIX: onChanged now correctly calls validateHours
                 onChanged: (v) {
-                  updatectrl.updateHoursError.value = updatectrl
-                      .validateHours();
+                  updatectrl.updateHoursError.value =
+                      updatectrl.validateHours();
                 },
                 decoration: InputDecoration(
                   hintText: "Enter Hours",
@@ -138,10 +139,8 @@ class UpdateHoursView extends StatelessWidget {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: Colors.black,
-                      width: 1.5,
-                    ),
+                    borderSide:
+                    const BorderSide(color: Colors.black, width: 1.5),
                   ),
                   errorBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -156,7 +155,7 @@ class UpdateHoursView extends StatelessWidget {
 
             // ─── Update Button ───
             Obx(
-              () => SizedBox(
+                  () => SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
@@ -169,37 +168,33 @@ class UpdateHoursView extends StatelessWidget {
                   onPressed: updatectrl.loading.value
                       ? null
                       : () {
-                          final err = updatectrl.validateHours();
-                          updatectrl.updateHoursError.value = err;
-                          if (err != null) return;
+                    final err = updatectrl.validateHours();
+                    updatectrl.updateHoursError.value = err;
+                    if (err != null) return;
 
-                          FocusManager.instance.primaryFocus?.unfocus();
+                    FocusManager.instance.primaryFocus?.unfocus();
 
-                          AppDialog.showConfirmDialog(
-                            title: 'Change Tire Details',
-                            message:
-                                'These changes will impact tire hours.\nDo you wish to proceed?',
-                            okText: 'Proceed',
-                            cancelText: 'Cancel',
-                            onOk: () async {
-                              // First submit the hours update
-                              await updatectrl.submitUpdateHours();
-
-                              // Then navigate to Vehicle Inspection page
-                              Get.toNamed(AppPages.VEHICLE_INSPEC_VIEW);
-                            },
-                          );
-                        },
+                    AppDialog.showConfirmDialog(
+                      title: 'Change Tire Details',
+                      message:
+                      'These changes will impact tire hours.\nDo you wish to proceed?',
+                      okText: 'Proceed',
+                      cancelText: 'Cancel',
+                      onOk: () {
+                        updatectrl.submitUpdateHours();
+                      },
+                    );
+                  },
                   child: updatectrl.loading.value
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text(
-                          "Update",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
+                    "Update",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -228,8 +223,10 @@ class UpdateHoursView extends StatelessWidget {
     );
   }
 
-  Widget _label(String text) =>
-      Text(text, style: const TextStyle(color: Colors.black54, fontSize: 13));
+  Widget _label(String text) => Text(
+    text,
+    style: const TextStyle(color: Colors.black54, fontSize: 13),
+  );
 
   Widget _requiredLabel(String text) => RichText(
     text: TextSpan(

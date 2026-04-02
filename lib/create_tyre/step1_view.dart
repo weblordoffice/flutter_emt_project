@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-
+import '../controllers/all_tyre_controller.dart';
 import 'create_tyre_controller.dart';
 
 class Step1View extends StatefulWidget {
@@ -28,18 +28,8 @@ class _Step1ViewState extends State<Step1View> {
   }
 
   String _month(int m) => const [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
   ][m - 1];
 
   String _weekday(int d) =>
@@ -65,65 +55,66 @@ class _Step1ViewState extends State<Step1View> {
               const SizedBox(height: 10),
 
               // ── Tire Serial Number ──
-              Row(
-                children: [
-                  const Text("Tire Serial Number "),
-                  const Text("*", style: TextStyle(color: Colors.red)),
-                ],
-              ),
-              Obx(
-                () => Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
-                  child: TextFormField(
-                    controller: c.tireSerialNo,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    decoration: InputDecoration(
-                      border: const OutlineInputBorder(),
-                      hintText: "Enter Tire Serial Number",
-                      focusedBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey, width: 2),
-                      ),
-                      errorText: c.tireSerialNoError.value.isNotEmpty
-                          ? c.tireSerialNoError.value
-                          : null,
-                      errorStyle: const TextStyle(
-                        color: Colors.red,
-                        fontSize: 12,
-                      ),
+// ── Tire Serial Number ──
+              Row(children: [
+                const Text("Tire Serial Number "),
+                const Text("*", style: TextStyle(color: Colors.red)),
+              ]),
+              Obx(() => Padding(
+                padding: const EdgeInsets.only(bottom: 14),
+                child: TextFormField(
+                  controller: c.tireSerialNo,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    hintText: "Enter Tire Serial Number",
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey, width: 2),
                     ),
-                    validator: (v) {
-                      if (v == null || v.trim().isEmpty) {
-                        return "TIRE Serial Number is required.";
-                      }
-                      return null;
-                    },
-                    onChanged: (v) {
-                      c.validateSerialNumber(v);
-                    },
+                    errorText: c.tireSerialNoError.value.isNotEmpty
+                        ? c.tireSerialNoError.value
+                        : null,
+                    errorStyle: const TextStyle(color: Colors.red, fontSize: 12),
                   ),
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return "TIRE Serial Number is required.";
+                    }
+                    return null;
+                  },
+                  onChanged: (v) {
+                    c.tireSerialNoError.value = '';
+                    if (v.trim().isNotEmpty && Get.isRegistered<AllTyreController>()) {
+                      final allTyres = Get.find<AllTyreController>().allTyres;
+                      final isDuplicate = allTyres.any(
+                            (t) => t.tireSerialNo?.toLowerCase() == v.trim().toLowerCase(),
+                      );
+                      if (isDuplicate) {
+                        c.tireSerialNoError.value = "This serial number already exists";
+                      }
+                    }
+                  },
                 ),
-              ),
-
-              // ── Brand Number ──
-              const Row(children: [Text("Enter Brand Number ")]),
-              _tf(
-                label: "Enter Brand No.",
-                controller: c.brandNo,
+              )),              _tf(
+                label: "Enter Tire Serial Number",
+                controller: c.tireSerialNo,
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) {
-                    return "Brand Number is required.";
+                    return "TIRE Serial Number is required.";
                   }
                   return null;
                 },
               ),
 
+              // ── Brand Number ──
+              const Row(children: [Text("Enter Brand Number ")]),
+              _tf(label: "Enter Brand No.", controller: c.brandNo),
+
               // ── Register Date ──
-              Row(
-                children: [
-                  const Text("Register Date "),
-                  const Text("*", style: TextStyle(color: Colors.red)),
-                ],
-              ),
+              Row(children: [
+                const Text("Register Date "),
+                const Text("*", style: TextStyle(color: Colors.red)),
+              ]),
               _tf(
                 label: "Registered Date",
                 controller: c.registeredDate,
@@ -143,12 +134,10 @@ class _Step1ViewState extends State<Step1View> {
               _tf(label: "Enter Purchase Order Number", controller: c.poNo),
 
               // ── Disposition ──
-              Row(
-                children: [
-                  const Text("Disposition "),
-                  const Text("*", style: TextStyle(color: Colors.red)),
-                ],
-              ),
+              Row(children: [
+                const Text("Disposition "),
+                const Text("*", style: TextStyle(color: Colors.red)),
+              ]),
               _tf(
                 label: "Enter Disposition",
                 value: c.dispositionText.value,
@@ -172,12 +161,10 @@ class _Step1ViewState extends State<Step1View> {
               ),
 
               // ── Current Hours ──
-              Row(
-                children: [
-                  const Text("Current Hours "),
-                  const Text("*", style: TextStyle(color: Colors.red)),
-                ],
-              ),
+              Row(children: [
+                const Text("Current Hours "),
+                const Text("*", style: TextStyle(color: Colors.red)),
+              ]),
 
               Padding(
                 padding: const EdgeInsets.only(bottom: 14),
@@ -188,7 +175,9 @@ class _Step1ViewState extends State<Step1View> {
                   autovalidateMode: AutovalidateMode.onUserInteraction,
 
                   // ✅ Sirf whole digits allow — decimal/dot block kiya
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
 
                   // ✅ Validator
                   validator: (_) {
@@ -300,22 +289,22 @@ class _Step1ViewState extends State<Step1View> {
           ),
           suffixIcon: showClear
               ? ValueListenableBuilder<TextEditingValue>(
-                  valueListenable: effectiveController,
-                  builder: (context, val, _) {
-                    if (val.text.isEmpty) return const SizedBox.shrink();
-                    return IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () {
-                        if (onClear != null) {
-                          onClear();
-                        } else {
-                          effectiveController.clear();
-                        }
-                        FocusScope.of(context).requestFocus(_focusNode);
-                      },
-                    );
-                  },
-                )
+            valueListenable: effectiveController,
+            builder: (context, val, _) {
+              if (val.text.isEmpty) return const SizedBox.shrink();
+              return IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  if (onClear != null) {
+                    onClear();
+                  } else {
+                    effectiveController.clear();
+                  }
+                  FocusScope.of(context).requestFocus(_focusNode);
+                },
+              );
+            },
+          )
               : null,
         ),
       ),
@@ -346,9 +335,7 @@ class _Step1ViewState extends State<Step1View> {
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
+                          horizontal: 16, vertical: 12),
                       color: Colors.red,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -363,8 +350,8 @@ class _Step1ViewState extends State<Step1View> {
                           ),
                           Text(
                             "${_weekday(selectedDate.weekday)}, "
-                            "${selectedDate.day} "
-                            "${_month(selectedDate.month)}",
+                                "${selectedDate.day} "
+                                "${_month(selectedDate.month)}",
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 22,
@@ -394,9 +381,7 @@ class _Step1ViewState extends State<Step1View> {
                     const Divider(height: 1),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
+                          horizontal: 12, vertical: 6),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -406,44 +391,34 @@ class _Step1ViewState extends State<Step1View> {
                               c.registeredDateApi = null;
                               Get.back();
                             },
-                            child: const Text(
-                              "CLEAR",
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            child: const Text("CLEAR",
+                                style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold)),
                           ),
                           Row(
                             children: [
                               TextButton(
                                 onPressed: () => Get.back(),
-                                child: const Text(
-                                  "CANCEL",
-                                  style: TextStyle(
-                                    color: Colors.red,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                child: const Text("CANCEL",
+                                    style: TextStyle(
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold)),
                               ),
                               TextButton(
                                 onPressed: () {
                                   c.registeredDate.text =
-                                      "${selectedDate.day.toString().padLeft(2, '0')}/"
+                                  "${selectedDate.day.toString().padLeft(2, '0')}/"
                                       "${selectedDate.month.toString().padLeft(2, '0')}/"
                                       "${selectedDate.year}";
-                                  c.registeredDateApi = selectedDate
-                                      .toUtc()
-                                      .toIso8601String();
+                                  c.registeredDateApi =
+                                      selectedDate.toUtc().toIso8601String();
                                   Get.back();
                                 },
-                                child: const Text(
-                                  "SET",
-                                  style: TextStyle(
-                                    color: Colors.red,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                child: const Text("SET",
+                                    style: TextStyle(
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold)),
                               ),
                             ],
                           ),
@@ -553,13 +528,10 @@ class _Step1ViewState extends State<Step1View> {
         builder: (context, setState) {
           return AlertDialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            title: Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
+                borderRadius: BorderRadius.circular(12)),
+            title: Text(label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
             contentPadding: EdgeInsets.zero,
             content: SizedBox(
               width: double.maxFinite,
@@ -577,31 +549,24 @@ class _Step1ViewState extends State<Step1View> {
                           onTap: () => setState(() => tempSelected = e),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
+                                horizontal: 16, vertical: 14),
                             child: Row(
                               children: [
                                 Expanded(
-                                  child: Text(
-                                    e,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: isSelected
-                                          ? selectedColor
-                                          : Colors.black,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w600
-                                          : FontWeight.normal,
-                                    ),
-                                  ),
+                                  child: Text(e,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: isSelected
+                                            ? selectedColor
+                                            : Colors.black,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w600
+                                            : FontWeight.normal,
+                                      )),
                                 ),
                                 if (isSelected)
-                                  Icon(
-                                    Icons.check,
-                                    color: selectedColor,
-                                    size: 20,
-                                  ),
+                                  Icon(Icons.check,
+                                      color: selectedColor, size: 20),
                               ],
                             ),
                           ),
@@ -618,10 +583,9 @@ class _Step1ViewState extends State<Step1View> {
                           child: Container(
                             padding: const EdgeInsets.all(14),
                             alignment: Alignment.center,
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(color: Colors.red, fontSize: 16),
-                            ),
+                            child: const Text('Cancel',
+                                style: TextStyle(
+                                    color: Colors.red, fontSize: 16)),
                           ),
                         ),
                       ),
@@ -635,14 +599,11 @@ class _Step1ViewState extends State<Step1View> {
                           child: Container(
                             padding: const EdgeInsets.all(14),
                             alignment: Alignment.center,
-                            child: const Text(
-                              'OK',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Colors.red,
-                              ),
-                            ),
+                            child: const Text('OK',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.red)),
                           ),
                         ),
                       ),
@@ -670,16 +631,11 @@ class _Step1ViewState extends State<Step1View> {
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.red,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
+              borderRadius: BorderRadius.circular(10)),
         ),
-        child: Text(
-          text,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
+        child: Text(text,
+            style: const TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.white)),
       ),
     );
   }
@@ -692,17 +648,12 @@ class _Step1ViewState extends State<Step1View> {
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
+              borderRadius: BorderRadius.circular(10)),
           side: const BorderSide(color: Colors.grey),
         ),
-        child: Text(
-          text,
-          style: const TextStyle(
-            color: Colors.red,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        child: Text(text,
+            style: const TextStyle(
+                color: Colors.red, fontWeight: FontWeight.bold)),
       ),
     );
   }

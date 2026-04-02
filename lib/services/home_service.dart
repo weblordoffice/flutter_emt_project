@@ -9,10 +9,80 @@ import 'package:http/http.dart' as http;
 import '../models/home_model.dart';
 
 class HomeService {
+
+  // ─── VEHICLE RAW LIST ────────────────────────────────────────────────────────
+  // ✅ FIX: timeStamp int 0 bhejo — float "0.0" bhejne pe server 500 deta tha
+  //         "Error converting data type varchar to decimal"
+  // ─────────────────────────────────────────────────────────────────────────────
+  static Future<List<Map<String, dynamic>>?> fetchVehicleRawList(
+      String parentAccountId) async {
+    try {
+      final cookie = await SecureStorage.getCookie();
+      if (cookie == null || cookie.isEmpty) return null;
+
+      // ✅ timeStamp = 0 (int) — float nahi
+      final uri = Uri.parse(
+        "${ApiConstants.baseUrl}/api/Vehicle/GetVehicleByUser/$parentAccountId/0?timeStamp=0",
+      );
+
+      final resp = await http.get(
+        uri,
+        headers: {"Accept": "application/json", "Cookie": cookie},
+      );
+
+      if (resp.statusCode == 200) {
+        final json = jsonDecode(resp.body);
+        if (json['didError'] == true) return null;
+        final List list = json['model'] ?? [];
+        return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      }
+      return null;
+    } catch (e) {
+      print("fetchVehicleRawList error: $e");
+      return null;
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>?> fetchTyreRawList(
+      String parentAccountId) async {
+    try {
+      final cookie = await SecureStorage.getCookie();
+      if (cookie == null) return null;
+
+      final uri = Uri.parse(
+        "${ApiConstants.baseUrl}/api/Tire/GetTiresByAccount/$parentAccountId",
+      );
+
+      final resp = await http.get(
+        uri,
+        headers: {"Content-Type": "application/json", "Cookie": cookie},
+      );
+
+      if (resp.statusCode == 401 || resp.statusCode == 403) {
+        await SecureStorage.clearCookie();
+        Get.find<GlobalLogoutHandler>().forceLogout();
+        return null;
+      }
+
+      if (resp.statusCode == 200) {
+        final json = jsonDecode(resp.body);
+        final List list = json['model'] ?? [];
+        return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      }
+      return null;
+    } catch (e) {
+      print("fetchTyreRawList error: $e");
+      return null;
+    }
+  }
+
+  // ─── FETCH HOME DATA ─────────────────────────────────────────────────────────
+  // Server /api/Home kabhi plain GUID string deta hai (e.g. "8f9a513e-...")
+  // Jab plain string aaye tab SecureStorage se HomeModel build karo
+  // ─────────────────────────────────────────────────────────────────────────────
   static Future<HomeModel?> fetchHomeData() async {
     try {
       final cookie = await SecureStorage.getCookie();
-
       if (cookie == null || cookie.isEmpty) {
         throw Exception("Session expired. Please login again.");
       }
@@ -22,24 +92,31 @@ class HomeService {
         uri,
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json",
-          "Cookie": cookie,
+          "Accept":        "application/json",
+          "Cookie":        cookie,
         },
       );
 
       print("DASHBOARD STATUS => ${resp.statusCode}");
       print("DASHBOARD BODY => ${resp.body}");
 
+      if (resp.statusCode == 401 || resp.statusCode == 403) {
+        await SecureStorage.clearCookie();
+        print("🔐 SESSION EXPIRED");
+        Get.find<GlobalLogoutHandler>().forceLogout();
+        return null;
+      }
+
       if (resp.statusCode == 200) {
         final decoded = jsonDecode(resp.body);
 
+        // ✅ Case 1: Plain GUID string — SecureStorage se HomeModel build karo
         if (decoded is String) {
-          print(
-            "⚠️ Home API returned plain String — not a Map. Skipping parse.",
-          );
-          return null;
+          print("⚠️ Home API returned plain GUID — building HomeModel from local storage");
+          return await _buildHomeModelFromLocal();
         }
 
+        // ✅ Case 2: Proper JSON Map
         if (decoded is Map<String, dynamic>) {
           final payload = decoded['data'] ?? decoded;
           if (payload is Map<String, dynamic>) {
@@ -50,13 +127,6 @@ class HomeService {
         return null;
       }
 
-      if (resp.statusCode == 401 || resp.statusCode == 403) {
-        await SecureStorage.clearCookie();
-        print("🔐 SESSION EXPIRED");
-        Get.find<GlobalLogoutHandler>().forceLogout();
-        return null;
-      }
-
       return null;
     } catch (e) {
       print('HomeService.fetchHomeData error: $e');
@@ -64,33 +134,56 @@ class HomeService {
     }
   }
 
+  // ─── SecureStorage se HomeModel build karo ───────────────────────────────────
+  static Future<HomeModel?> _buildHomeModelFromLocal() async {
+    try {
+      final accountName  = await SecureStorage.getParentAccountName() ?? '';
+      final locationName = await SecureStorage.getLocationName() ?? '';
+      final userName     = await SecureStorage.getUserProfileName() ?? '';
+      final userRole     = await SecureStorage.getUserProfileRole() ?? '';
+
+      print("🏠 Building HomeModel from local => $accountName | $locationName | $userName");
+
+      return HomeModel(
+        username:            userName,
+        parentAccount:       accountName,
+        location:            locationName,
+        role:                userRole,
+        lastInspection:      '--',
+        unsyncedInspections: 0,
+        syncedInspections:   0,
+        totalTyres:          0,
+        vehicles:            0,
+        appVersion:          '1.0',
+        imageUrl:            '',
+      );
+    } catch (e) {
+      print("_buildHomeModelFromLocal error: $e");
+      return null;
+    }
+  }
+
   static Future<bool> syncInspections() async {
     try {
       final cookie = await SecureStorage.getCookie();
-
       if (cookie == null || cookie.isEmpty) {
         throw Exception("Session expired. Please login again.");
       }
 
       final uri = Uri.parse("${ApiConstants.baseUrl}/inspections/sync");
-
       final resp = await http.post(
         uri,
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json",
-          "Cookie": cookie,
+          "Accept":        "application/json",
+          "Cookie":        cookie,
         },
       );
-
-      print("SYNC STATUS => ${resp.statusCode}");
-      print("SYNC BODY => ${resp.body}");
 
       if (resp.statusCode == 200) return true;
 
       if (resp.statusCode == 401 || resp.statusCode == 403) {
         await SecureStorage.clearCookie();
-        print("🔐 SESSION EXPIRED");
         Get.find<GlobalLogoutHandler>().forceLogout();
         return false;
       }
@@ -102,6 +195,7 @@ class HomeService {
     }
   }
 
+  // ✅ FIX: timeStamp int 0 — float nahi
   static Future<int> fetchTyreCountByAccount(String parentAccountId) async {
     try {
       final cookie = await SecureStorage.getCookie();
@@ -111,15 +205,10 @@ class HomeService {
         "${ApiConstants.baseUrl}/api/Tire/GetTiresByAccount/$parentAccountId",
       );
 
-      print("Tyre Count URL: $uri");
-
       final resp = await http.get(
         uri,
         headers: {"Content-Type": "application/json", "Cookie": cookie},
       );
-
-      print("Tyre Count STATUS: ${resp.statusCode}");
-      print("Tyre Count BODY: ${resp.body}");
 
       if (resp.statusCode == 401 || resp.statusCode == 403) {
         await SecureStorage.clearCookie();
@@ -130,7 +219,6 @@ class HomeService {
       if (resp.statusCode == 200) {
         final json = jsonDecode(resp.body);
         final List list = json['model'] ?? [];
-        print("Tyre Count Result: ${list.length}");
         return list.length;
       }
 
@@ -141,28 +229,26 @@ class HomeService {
     }
   }
 
+  // ✅ FIX: timeStamp = 0 (int) in URL — float "0.0" se server 500 deta tha
   static Future<int> fetchVehicleCountByAccount(String parentAccountId) async {
     try {
       final cookie = await SecureStorage.getCookie();
       if (cookie == null || cookie.isEmpty) return 0;
 
-      const double timeStamp = 0.0;
-
+      // ✅ /0?timeStamp=0 — integer, float nahi
       final uri = Uri.parse(
-        "${ApiConstants.baseUrl}/api/Vehicle/GetVehicleByUser/"
-        "$parentAccountId/0.0"
-        "?timeStamp=$timeStamp",
+        "${ApiConstants.baseUrl}/api/Vehicle/GetVehicleByUser/$parentAccountId/0?timeStamp=0",
       );
 
-      print("Vehicle Count URL: $uri");
+      print("🌐 URL => $uri");
 
       final resp = await http.get(
         uri,
         headers: {"Accept": "application/json", "Cookie": cookie},
       );
 
-      print("Vehicle Count STATUS: ${resp.statusCode}");
-      print("Vehicle Count BODY: ${resp.body}");
+      print("📡 STATUS => ${resp.statusCode}");
+      print("📦 BODY => ${resp.body}");
 
       if (resp.statusCode == 200) {
         final json = jsonDecode(resp.body);
@@ -171,7 +257,6 @@ class HomeService {
           return 0;
         }
         final List list = json['model'] ?? [];
-        print("Vehicle Count Result: ${list.length}");
         return list.length;
       }
 
@@ -184,11 +269,10 @@ class HomeService {
 
   static Future<DashboardModel?> fetchReportDashboardHomeData() async {
     final parentAccountId = await SecureStorage.getParentAccountId();
-    final getLocationId = await SecureStorage.getLocationId();
+    final getLocationId   = await SecureStorage.getLocationId();
 
     try {
       final cookie = await SecureStorage.getCookie();
-
       if (cookie == null || cookie.isEmpty) {
         throw Exception("Session expired. Please login again.");
       }
@@ -199,8 +283,7 @@ class HomeService {
       );
 
       if (resp['model'] != null) {
-        final model = resp["model"];
-        return DashboardModel.fromJson(model);
+        return DashboardModel.fromJson(resp["model"]);
       }
 
       return null;

@@ -17,19 +17,19 @@ class UpdateHoursDatePickResult {
   final DateTime? date;
 
   UpdateHoursDatePickResult.cancel()
-    : isCancel = true,
-      isClear = false,
-      date = null;
+      : isCancel = true,
+        isClear = false,
+        date = null;
 
   UpdateHoursDatePickResult.clear()
-    : isCancel = false,
-      isClear = true,
-      date = null;
+      : isCancel = false,
+        isClear = true,
+        date = null;
 
   UpdateHoursDatePickResult.set(DateTime d)
-    : isCancel = false,
-      isClear = false,
-      date = d;
+      : isCancel = false,
+        isClear = false,
+        date = d;
 }
 
 Future<UpdateHoursDatePickResult?> showUpdateHoursDatePicker(
@@ -91,12 +91,10 @@ class _UpdateHoursDatePickerDialogState
     return Theme(
       data: Theme.of(context).copyWith(
         colorScheme: scheme,
+        dialogBackgroundColor: _dialogSurface,
         textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(
-            foregroundColor: const Color.fromARGB(255, 31, 31, 31),
-          ),
+          style: TextButton.styleFrom(foregroundColor: const Color.fromARGB(255, 31, 31, 31)),
         ),
-        dialogTheme: DialogThemeData(backgroundColor: _dialogSurface),
       ),
       child: Dialog(
         backgroundColor: _dialogSurface,
@@ -158,32 +156,20 @@ class _UpdateHoursDatePickerDialogState
               child: Row(
                 children: [
                   TextButton(
-                    onPressed: () => Navigator.of(
-                      context,
-                    ).pop(UpdateHoursDatePickResult.clear()),
-                    child: const Text(
-                      'CLEAR',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    onPressed: () => Navigator.of(context)
+                        .pop(UpdateHoursDatePickResult.clear()),
+                    child: const Text('CLEAR'),
                   ),
                   const Spacer(),
                   TextButton(
-                    onPressed: () => Navigator.of(
-                      context,
-                    ).pop(UpdateHoursDatePickResult.cancel()),
-                    child: const Text(
-                      'CANCEL',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    onPressed: () => Navigator.of(context)
+                        .pop(UpdateHoursDatePickResult.cancel()),
+                    child: const Text('CANCEL'),
                   ),
                   TextButton(
-                    onPressed: () => Navigator.of(
-                      context,
-                    ).pop(UpdateHoursDatePickResult.set(_selected)),
-                    child: const Text(
-                      'SET',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    onPressed: () => Navigator.of(context)
+                        .pop(UpdateHoursDatePickResult.set(_selected)),
+                    child: const Text('OK'),
                   ),
                 ],
               ),

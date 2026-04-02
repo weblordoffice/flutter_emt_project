@@ -1,11 +1,10 @@
 import 'package:emtrack/color/app_color.dart';
+import 'package:emtrack/controllers/install_tyre_controller.dart';
 import 'package:emtrack/controllers/search_install_tire_controller.dart';
 import 'package:emtrack/create_tyre/create_tyre_screen.dart';
-import 'package:emtrack/models/tyre_model.dart';
 import 'package:emtrack/routes/app_pages.dart';
 import 'package:emtrack/views/install_tyre_view.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 
 class SearchInstallView extends StatelessWidget {
@@ -14,13 +13,36 @@ class SearchInstallView extends StatelessWidget {
   final String wheelPosition;
 
   SearchInstallView({super.key})
-    : vehicleId = Get.arguments["vehicleId"],
-      vehicleNumber = Get.arguments['vehicleNumber'],
-      wheelPosition = Get.arguments["wheelPosition"];
+      : vehicleId     = Get.arguments["vehicleId"],
+        vehicleNumber = Get.arguments['vehicleNumber'],
+        wheelPosition = Get.arguments["wheelPosition"];
 
   final SearchInstallTireController controller = Get.put(
     SearchInstallTireController(),
   );
+
+  // ✅ Helper — InstallTyreController ko arguments ke saath navigate karo
+  void _goToInstallView({
+    required int tireId,
+    required String serialNo,
+  }) {
+    // Purana controller delete karo taaki fresh onInit() chale
+    if (Get.isRegistered<InstallTyreController>()) {
+      Get.delete<InstallTyreController>(force: true);
+    }
+
+    // ✅ Arguments Set KARO — Get.toNamed ke saath
+    Get.toNamed(
+      AppPages.INSTALL_TYRE_VIEW,
+      arguments: {
+        "vehicleId":     vehicleId,
+        "vehicleNumber": vehicleNumber,
+        "wheelPosition": wheelPosition,
+        "tireId":        tireId,
+        "serialNo":      serialNo,
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +50,7 @@ class SearchInstallView extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: const Text(
-          "Search, Install & Inspect Tire",
+          "Search, Install",
           style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
@@ -36,7 +58,7 @@ class SearchInstallView extends StatelessWidget {
       ),
       body: Column(
         children: [
-          /// 🔹 INFO CARD
+          // ─── INFO CARD ───
           Container(
             margin: const EdgeInsets.all(12),
             padding: const EdgeInsets.all(16),
@@ -50,24 +72,22 @@ class SearchInstallView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Vehicle ID:"),
+                const Text("Vehicle ID:"),
                 Text(
                   vehicleNumber,
-
-                  //   "#$vehicleId",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                Divider(),
-                Text("Wheel Position:", style: TextStyle(fontSize: 12)),
+                const Divider(),
+                const Text("Wheel Position:", style: TextStyle(fontSize: 12)),
                 Text(
                   wheelPosition,
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
           ),
 
-          /// 🔍 SEARCH FIELD
+          // ─── SEARCH FIELD ───
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: TextFormField(
@@ -84,39 +104,29 @@ class SearchInstallView extends StatelessWidget {
 
           const SizedBox(height: 10),
 
-          /// 📋 LIST SECTION
+          // ─── TYRE LIST ───
           Expanded(
             child: Obx(() {
-              /// 🔄 LOADING
               if (controller.isLoading.value && controller.allTyres.isEmpty) {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              /// ❌ EMPTY
               if (controller.visibleTyres.isEmpty) {
                 return const Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.search_off,
-                        size: 80,
-                        color: AppColors.primary,
-                      ),
+                      Icon(Icons.search_off, size: 80, color: AppColors.primary),
                       SizedBox(height: 10),
                       Text(
                         'No Inventory Tyres Found',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: AppColors.primary,
-                        ),
+                        style: TextStyle(fontSize: 16, color: AppColors.primary),
                       ),
                     ],
                   ),
                 );
               }
 
-              /// ✅ LIST
               return ListView.builder(
                 itemCount: controller.visibleTyres.length,
                 itemBuilder: (_, i) {
@@ -124,20 +134,12 @@ class SearchInstallView extends StatelessWidget {
 
                   return GestureDetector(
                     onTap: () {
-                      Get.toNamed(
-                        AppPages.INSTALL_TYRE_VIEW,
-                        arguments: {
-                          "vehicleId": vehicleId, // from this page
-                          "vehicleNumber": vehicleNumber, // from this page
-                          "wheelPosition": wheelPosition, // from this page
-                          "tireId": tyre.tireId,
-                          "serialNo": tyre.tireSerialNo,
-
-                          // "avgTread": tyre.currentTreadDepth,
-                        },
+                      // ✅ FIX: tireId aur serialNo tyre se lo
+                      _goToInstallView(
+                        tireId:   tyre.tireId ?? 0,
+                        serialNo: tyre.tireSerialNo ?? '',
                       );
                     },
-
                     child: Card(
                       margin: const EdgeInsets.symmetric(
                         horizontal: 12,
@@ -158,18 +160,13 @@ class SearchInstallView extends StatelessWidget {
                               'Size: ${tyre.sizeName ?? '-'}',
                               style: const TextStyle(fontSize: 12),
                             ),
-
                             Text(
                               'Status: ${tyre.tireStatusName ?? '-'}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                             Text(
                               'Tread Depth: ${tyre.averageTreadDepth ?? '-'}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
@@ -188,21 +185,36 @@ class SearchInstallView extends StatelessWidget {
         ],
       ),
 
-      /// 🔻 FLOATING BUTTONS
+      // ─── FAB ───
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: _createVehicleFAB(),
+      floatingActionButton: _buildFAB(),
     );
   }
 
-  Widget _createVehicleFAB() {
+  Widget _buildFAB() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        SvgPicture.asset(
-          'assets/svgImage/NewTire.svg',
-          height: 46,
-          fit: BoxFit.contain,
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.yellow.shade800,
+            foregroundColor: Colors.black,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          ),
+          onPressed: () => Get.to(() => CreateTyreScreen()),
+          child: const Text(
+            'Create New Tyre',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
+        const SizedBox(width: 8),
+        FloatingActionButton(
+          backgroundColor: Colors.red.shade900,
+          // FAB se manually kholne pe tireId=0 — search se select karna hoga
+          onPressed: () => _goToInstallView(tireId: 0, serialNo: ''),
+          child: const Icon(Icons.settings, color: Colors.yellow),
+        ),
+        const SizedBox(width: 10),
       ],
     );
   }

@@ -25,6 +25,7 @@ class GrandparentAccountController extends GetxController {
   /// Validation
   final createFormKey = GlobalKey<FormState>();
 
+
   /// Step-1 fields
   RxString accountType = 'OWNED'.obs;
   RxString grandparentName = ''.obs;
@@ -109,7 +110,6 @@ class GrandparentAccountController extends GetxController {
       Get.to(() => GrandparentAccountListView());
     }
   }
-
   Future<void> fetchParentAccounts() async {
     try {
       final response = await ApiService.getApi(

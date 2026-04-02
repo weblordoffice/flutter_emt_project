@@ -1,139 +1,224 @@
-import 'dart:convert';
 import 'package:emtrack/inspection/vehicle_inspe_controller.dart';
+import 'package:emtrack/controllers/search_install_tire_controller.dart';
 import 'package:emtrack/models/install_tyre_model.dart';
-import 'package:emtrack/services/install_tyre_service.dart';
 import 'package:emtrack/services/master_data_service.dart';
-import 'package:emtrack/utils/secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-
 import '../models/tyre_model.dart';
 import '../services/tyre_service.dart';
+import '../utils/local_db.dart';
 
 class InstallTyreController extends GetxController {
-  final RxBool isSubmitting = false.obs;
-  final RxBool isInitialLoading = false.obs;
 
-  final service = InstallTyreService();
-  final tyreService = TyreService();
-  final picker = ImagePicker();
-  final MasterDataService _masterService = MasterDataService();
+  // ════════════════════════════════════
+  // DEPENDENCIES
+  // ════════════════════════════════════
+  final tyreService    = TyreService();
+  final picker         = ImagePicker();
+  final _masterService = MasterDataService();
+
+  // ════════════════════════════════════
+  // STATE
+  // ════════════════════════════════════
+  final RxBool isSubmitting     = false.obs;
+  final RxBool isInitialLoading = false.obs;
 
   Rx<InstallTireModel> model = InstallTireModel().obs;
 
-  // Wear Conditions
-  final wearConditionsList = <String>[].obs;
+  final wearConditionsList   = <String>[].obs;
   final wearConditionsIdList = <int>[].obs;
   final RxInt selectedWearConditionsId = 0.obs;
   final wearConditionsId = TextEditingController();
 
-  // Casing Conditions
-  final casingConditionList = <String>[].obs;
+  final casingConditionList   = <String>[].obs;
   final casingConditionIdList = <int>[].obs;
   final RxInt selectedCasingConditionId = 0.obs;
   final casingConditionsId = TextEditingController();
 
-  // Disposition
-  final dispositionList = <String>[].obs;
+  final dispositionList   = <String>[].obs;
   final dispositionIdList = <int>[].obs;
   final RxInt installedDispositionId = 0.obs;
 
-  // Sanitized values from API
-  double safeOriginalTread = 140.0;
-  double safeRemoveAt = 0.0;
-
-  final RxString vehicleNumber = "".obs;
   RxList<TyreModel> tyreList = <TyreModel>[].obs;
-  RxDouble avgTread = 0.0.obs;
+  RxDouble avgTread          = 0.0.obs;
+  final RxString vehicleNumber = ''.obs;
 
-  final commentsController = TextEditingController();
-  final treadDepthController = TextEditingController();
+  double safeOriginalTread = 140.0;
+  double safeRemoveAt      = 0.0;
+
+  final commentsController        = TextEditingController();
   final previousCommentController = TextEditingController(
-    text: "List Of Previous Comments",
-  );
+      text: 'List Of Previous Comments');
 
-  double _sanitizeTread(double? value, double fallback) {
-    if (value == null || value <= 0 || value > 100) return fallback;
-    return value;
+  // ════════════════════════════════════
+  // SANITIZERS
+  // ════════════════════════════════════
+  double _sanitizeTread(double? v, double fallback) {
+    if (v == null || v <= 0 || v > 100) return fallback;
+    return v;
   }
 
-  double _sanitizePressure(double? value) {
-    if (value == null || value <= 0 || value > 500) return 28.0;
-    return value;
+  double _sanitizePressure(double? v) {
+    if (v == null || v <= 0 || v > 500) return 28.0;
+    return v;
   }
 
-  double _sanitizeOriginal(double? value) {
-    if (value == null || value <= 0 || value > 1000) return 140.0;
-    return value;
+  double _sanitizeOriginal(double? v) {
+    if (v == null || v <= 0 || v > 1000) return 140.0;
+    return v;
   }
 
-  double _sanitizeRemoveAt(double? value) {
-    if (value == null || value < 0 || value > 100) return 0.0;
-    return value;
+  double _sanitizeRemoveAt(double? v) {
+    if (v == null || v < 0 || v > 100) return 0.0;
+    return v;
   }
 
+  // ════════════════════════════════════
+  // INIT
+  // ════════════════════════════════════
   @override
   void onInit() {
     super.onInit();
-
-    commentsController.text = model.value.comments ?? "";
+    commentsController.text = model.value.comments ?? '';
 
     final args = Get.arguments ?? {};
-    print("install tire args => $args");
+    print('📦 InstallTyre args => $args');
 
-    final int vehicleId = args["vehicleId"] ?? 0;
-    vehicleNumber.value = args["vehicleNumber"] ?? "";
-    final String wheelPosition = args["wheelPosition"] ?? "";
-    final int tireId = args["tireId"] ?? 0;
-    final String serialNo = args["serialNo"] ?? "";
+    final int    vehicleId = args['vehicleId']     ?? 0;
+    final String vNumber   = args['vehicleNumber'] ?? '';
+    final String wheelPos  = args['wheelPosition'] ?? '';
+    final int    tireId    = args['tireId']        ?? 0;
+    final String serialNo  = args['serialNo']      ?? '';
+
+    vehicleNumber.value = vNumber;
 
     model.update((m) {
-      m!.vehicleId = vehicleId;
-      m.wheelPosition = wheelPosition;
-      m.tireId = tireId;
-      m.tireSerialNo = serialNo;
+      m!.vehicleId        = vehicleId;
+      m.wheelPosition     = wheelPos;
+      m.tireId            = tireId;
+      m.tireSerialNo      = serialNo;
       m.currentTreadDepth = 0.0;
     });
 
-    print("INIT vehicleId => $vehicleId");
-    print("INIT wheelPosition => $wheelPosition");
-    print("INIT tireId => $tireId");
+    print('🔑 vehicleId=$vehicleId | wheel=$wheelPos | tireId=$tireId');
 
     loadMasterData();
-    loadTyres(tireId);
+
+
+    if (tireId > 0) {
+      _initTyreData(tireId);
+    }
   }
 
-  void incAir() => model.update((m) => m!.currentPressure++);
-  void decAir() => model.update((m) {
+
+  Future<void> _initTyreData(int tireId) async {
+    isInitialLoading.value = true;
+    try {
+      await _loadTyreFromLocal(tireId);
+      await _loadTyreFromApi(tireId);
+    } finally {
+      isInitialLoading.value = false;
+      print('✅ Tyre init complete — tyreList.length=${tyreList.length}');
+    }
+  }
+
+  // ════════════════════════════════════
+  // COUNTER ACTIONS
+  // ════════════════════════════════════
+  void incAir()     => model.update((m) => m!.currentPressure++);
+  void decAir()     => model.update((m) {
     if (m!.currentPressure > 0) m.currentPressure--;
   });
-
-  void incOutside() => model.update((m) {
-    m!.outsideTread++;
-    _calcAverage(m);
-  });
+  void incOutside() => model.update((m) { m!.outsideTread++; _avg(m); });
   void decOutside() => model.update((m) {
     if (m!.outsideTread > 0) m.outsideTread--;
-    _calcAverage(m);
+    _avg(m);
   });
-
-  void incInside() => model.update((m) {
-    m!.insideTread++;
-    _calcAverage(m);
-  });
-  void decInside() => model.update((m) {
+  void incInside()  => model.update((m) { m!.insideTread++; _avg(m); });
+  void decInside()  => model.update((m) {
     if (m!.insideTread > 0) m.insideTread--;
-    _calcAverage(m);
+    _avg(m);
   });
 
-  void _calcAverage(InstallTireModel m) {
-    final outside = m.outsideTread;
-    final inside = m.insideTread;
-    final avg = (outside + inside) / 2;
-    m.currentTreadDepth = double.parse(avg.toStringAsFixed(2));
+  void _avg(InstallTireModel m) {
+    m.currentTreadDepth = double.parse(
+        ((m.outsideTread + m.insideTread) / 2).toStringAsFixed(2));
   }
 
+  // ════════════════════════════════════
+  // STEP 1 — LOCAL SQLite se tyre load
+  // ════════════════════════════════════
+  Future<void> _loadTyreFromLocal(int tireId) async {
+    try {
+      final db     = await LocalDatabaseService.database;
+      final result = await db.query(
+        'tires',
+        where: 'tireId = ?', whereArgs: [tireId], limit: 1,
+      );
+
+      if (result.isNotEmpty) {
+        final t  = result.first;
+        final o  = _sanitizeTread((t['outsideTread']    as num?)?.toDouble(), 1.0);
+        final i  = _sanitizeTread((t['insideTread']     as num?)?.toDouble(), 1.0);
+        final p  = _sanitizePressure((t['currentPressure'] as num?)?.toDouble());
+        final av = double.parse(((o + i) / 2).toStringAsFixed(2));
+
+        model.update((m) {
+          m!.outsideTread     = o;
+          m.insideTread       = i;
+          m.currentTreadDepth = av;
+          m.currentPressure   = p;
+          if ((m.tireSerialNo ?? '').isEmpty)
+            m.tireSerialNo = t['tireSerialNo'] as String? ?? '';
+        });
+        print('✅ Local DB loaded: tireId=$tireId | outside=$o | inside=$i | pressure=$p');
+      } else {
+        print('⚠️ No local data found for tireId=$tireId');
+      }
+    } catch (e) {
+      print('⚠️ Local load failed: $e');
+    }
+  }
+
+
+  Future<void> _loadTyreFromApi(int tireId) async {
+    if (tireId <= 0) return;
+    try {
+      final tyres = await tyreService.getTyresById(tireId);
+      tyreList..clear()..addAll(tyres);
+
+      if (tyreList.isNotEmpty) {
+        final t  = tyreList.first;
+        safeOriginalTread = _sanitizeOriginal(t.originalTread);
+        safeRemoveAt      = _sanitizeRemoveAt(t.removeAt);
+
+        final o  = _sanitizeTread(t.outsideTread, 1.0);
+        final i  = _sanitizeTread(t.insideTread,  1.0);
+        final p  = _sanitizePressure(t.currentPressure);
+        final av = double.parse(((o + i) / 2).toStringAsFixed(2));
+        avgTread.value = av;
+
+        model.update((m) {
+          m!.outsideTread     = o;
+          m.insideTread       = i;
+          m.currentTreadDepth = av;
+          m.currentPressure   = p;
+          if ((m.tireSerialNo ?? '').isEmpty)
+            m.tireSerialNo = t.tireSerialNo ?? '';
+        });
+        print('✅ API data loaded: serial=${t.tireSerialNo} | outside=$o | inside=$i | pressure=$p');
+      } else {
+        print('⚠️ API returned empty tyreList for tireId=$tireId');
+      }
+    } catch (e) {
+      print('⚠️ API load failed (using local data): $e');
+    }
+  }
+
+  // ════════════════════════════════════
+  // MASTER DATA
+  // ════════════════════════════════════
   Future<void> loadMasterData() async {
     try {
       final data = await _masterService.fetchMasterData();
@@ -141,35 +226,29 @@ class InstallTyreController extends GetxController {
       wearConditionsList.assignAll(
         (data['wearConditions'] as List)
             .map((e) => e['wearConditionName'].toString().toUpperCase())
-            .toSet()
-            .toList(),
+            .toSet().toList(),
       );
       wearConditionsIdList.assignAll(
         (data['wearConditions'] as List)
             .map((e) => e['wearConditionId'] as int)
-            .toSet()
-            .toList(),
+            .toSet().toList(),
       );
 
       casingConditionList.assignAll(
         (data['casingCondition'] as List)
             .map((e) => e['casingConditionName'].toString().toUpperCase())
-            .toSet()
-            .toList(),
+            .toSet().toList(),
       );
       casingConditionIdList.assignAll(
         (data['casingCondition'] as List)
             .map((e) => e['casingConditionId'] as int)
-            .toSet()
-            .toList(),
+            .toSet().toList(),
       );
 
-      if (wearConditionsIdList.isNotEmpty) {
+      if (wearConditionsIdList.isNotEmpty)
         selectedWearConditionsId.value = wearConditionsIdList.first;
-      }
-      if (casingConditionIdList.isNotEmpty) {
+      if (casingConditionIdList.isNotEmpty)
         selectedCasingConditionId.value = casingConditionIdList.first;
-      }
 
       dispositionList.assignAll(
         (data['tireDispositions'] as List)
@@ -183,256 +262,182 @@ class InstallTyreController extends GetxController {
       );
 
       for (var d in data['tireDispositions']) {
-        if (d['dispositionName'].toString().toLowerCase() == "installed") {
+        if (d['dispositionName'].toString().toLowerCase() == 'installed') {
           installedDispositionId.value = d['dispositionId'];
           break;
         }
       }
 
-      print("✅ Installed Disposition ID => ${installedDispositionId.value}");
+      if (installedDispositionId.value == 0) installedDispositionId.value = 2;
+
+      print('✅ Master data loaded | installedId=${installedDispositionId.value}');
     } catch (e) {
-      print("❌ Master Data Error: $e");
-      Get.snackbar("Error", "Failed to load master data: $e");
+      print('❌ Master data error: $e');
+      installedDispositionId.value = 2; // safe fallback
     }
   }
 
-  Future<void> loadTyres(int tireId) async {
-    isInitialLoading.value = true;
-    try {
-      final tyres = await tyreService.getTyresById(tireId);
-      print("SERVICE RESULT => $tyres");
-
-      tyreList.clear();
-      tyreList.addAll(tyres);
-
-      if (tyreList.isNotEmpty) {
-        final t = tyreList.first;
-
-        safeOriginalTread = _sanitizeOriginal(t.originalTread);
-        safeRemoveAt = _sanitizeRemoveAt(t.removeAt);
-
-        final safeOutside = _sanitizeTread(t.outsideTread, 1.0);
-        final safeInside = _sanitizeTread(t.insideTread, 1.0);
-        final safePressure = _sanitizePressure(t.currentPressure);
-        final safeAvg = double.parse(
-          ((safeOutside + safeInside) / 2).toStringAsFixed(2),
-        );
-
-        print(
-          "🔧 rawOriginal => ${t.originalTread} | safe => $safeOriginalTread",
-        );
-        print("🔧 rawOutside => ${t.outsideTread} | safe => $safeOutside");
-        print("🔧 rawInside => ${t.insideTread} | safe => $safeInside");
-        print("🔧 rawRemoveAt => ${t.removeAt} | safe => $safeRemoveAt");
-
-        avgTread.value = safeAvg;
-
-        model.update((m) {
-          m!.outsideTread = safeOutside;
-          m.insideTread = safeInside;
-          m.currentTreadDepth = safeAvg;
-          m.currentPressure = safePressure;
-        });
-      }
-    } catch (e) {
-      print("❌ Error loading tyres: $e");
-    } finally {
-      isInitialLoading.value = false;
-    }
-  }
-
+  // ════════════════════════════════════════════════════════════
+  // SUBMIT
+  // ✅ FIX: tyreList ready hone ke baad diagram mein
+  //         real data (tread, pressure, serial) dikhega
+  // ════════════════════════════════════════════════════════════
   Future<void> submit() async {
     if (isSubmitting.value) return;
+
+    // ✅ FIX: Loading abhi bhi chal rahi hai — user ko rok do
+    if (isInitialLoading.value) {
+      Get.snackbar(
+        'Please Wait',
+        'Tyre data still loading, please wait...',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+      return;
+    }
+
     isSubmitting.value = true;
 
     try {
-      final parentAccountIdStr = await SecureStorage.getParentAccountId();
-      final locationIdStr = await SecureStorage.getLocationId();
-      final cookie = await SecureStorage.getCookie();
-
-      if (cookie == null || cookie.isEmpty) {
-        Get.snackbar("Error", "Session expired. Please login again.");
-        isSubmitting.value = false;
-        return;
-      }
-
-      final parentAccountId = int.tryParse(parentAccountIdStr ?? '') ?? 0;
-      final locationId = int.tryParse(locationIdStr ?? '') ?? 0;
-
       final m = model.value;
 
-      if (parentAccountId == 0 || locationId == 0) {
-        Get.snackbar("Error", "Invalid Account or Location");
-        isSubmitting.value = false;
-        return;
-      }
-      if (m.tireId == null || m.tireId == 0) {
-        Get.snackbar("Error", "Tire ID is missing");
-        isSubmitting.value = false;
-        return;
-      }
-      if (m.vehicleId == null || m.vehicleId == 0) {
-        Get.snackbar("Error", "Vehicle ID is missing");
-        isSubmitting.value = false;
-        return;
-      }
-      if (installedDispositionId.value == 0) {
-        Get.snackbar("Error", "Installed Disposition not found");
-        isSubmitting.value = false;
-        return;
-      }
-      if (selectedWearConditionsId.value == 0) {
-        Get.snackbar("Validation", "Please select Wear Condition");
-        isSubmitting.value = false;
-        return;
-      }
-      if (selectedCasingConditionId.value == 0) {
-        Get.snackbar("Validation", "Please select Casing Condition");
-        isSubmitting.value = false;
+      // ── Validation ──────────────────────────────────────
+      if ((m.tireId ?? 0) <= 0) {
+        Get.snackbar('Error', 'Please select a tyre from inventory',
+            backgroundColor: Colors.red, colorText: Colors.white);
         return;
       }
 
-      final outsideTread = _sanitizeTread(m.outsideTread, 1.0);
-      final insideTread = _sanitizeTread(m.insideTread, 1.0);
-      final middleTread = double.parse(
-        ((outsideTread + insideTread) / 2).toStringAsFixed(2),
+      if ((m.wheelPosition ?? '').trim().isEmpty) {
+        Get.snackbar('Error', 'Wheel position missing',
+            backgroundColor: Colors.red, colorText: Colors.white);
+        return;
+      }
+
+
+      final tyreData = tyreList.isNotEmpty ? tyreList.first : null;
+
+      final double outside = _sanitizeTread(m.outsideTread, 1.0);
+      final double inside  = _sanitizeTread(m.insideTread,  1.0);
+      final double middle  = double.parse(
+          ((outside + inside) / 2).toStringAsFixed(2));
+
+      final String tireSerialNo = (m.tireSerialNo ?? '').isNotEmpty
+          ? m.tireSerialNo!
+          : (tyreData?.tireSerialNo ?? '');
+
+      final String wheelPos = m.wheelPosition!.trim().toUpperCase();
+
+      print('🔵 LOCAL install: $wheelPos | serial=$tireSerialNo | outside=$outside | inside=$inside | pressure=${m.currentPressure}');
+
+      // ════════════════════════════════════════════════════
+      // STEP 1: SQLite  disposition → INSTALLED
+      // ════════════════════════════════════════════════════
+      await LocalDatabaseService.updateTireDisposition(
+        tireId:          m.tireId!,
+        dispositionId:   installedDispositionId.value,
+        dispositionName: 'INSTALLED',
+        wheelPosition:   wheelPos,
       );
-      final currentTread =
-          (m.currentTreadDepth != null &&
-              m.currentTreadDepth! > 0 &&
-              m.currentTreadDepth! <= 100)
-          ? m.currentTreadDepth!
-          : middleTread;
-      final currentPressure = _sanitizePressure(m.currentPressure);
+      print('✅ SQLite: tireId=${m.tireId} → INSTALLED @ $wheelPos');
 
-      Map<String, dynamic> payload = {
-        "action": "Install",
-        "inspectionDate": DateTime.now().toUtc().toIso8601String(),
-        "locationId": locationId,
-        "parentAccountId": parentAccountId,
-        "vehicleId": m.vehicleId,
-        "inspectionId": 0,
-        "tireId": m.tireId,
-        "currentHours": 0.0,
-        "currentMiles": 0.0,
-        "imagesLocation": "",
-        "tireSerialNo":
-            m.tireSerialNo ??
-            (tyreList.isNotEmpty ? tyreList.first.tireSerialNo : "") ??
-            "",
-        "brandNumber": "",
-        "originalTread": safeOriginalTread,
-        "removeAt": safeRemoveAt,
-        "outsideTread": outsideTread,
-        "middleTread": middleTread,
-        "insideTread": insideTread,
-        "currentTreadDepth": currentTread,
-        "currentPressure": currentPressure,
-        "pressureUnitId": 1,
-        "casingConditionId": selectedCasingConditionId.value,
-        "wearConditionId": selectedWearConditionsId.value,
-        "comments": (m.comments ?? '').isNotEmpty ? m.comments : "No comments",
-        "removalReasonId": 0,
-        "dispositionId": installedDispositionId.value,
-        "rimDispositionId": 0,
-        "wheelPosition": m.wheelPosition?.trim() ?? "",
-        "mountedRimId": 0,
-        "createdBy": "",
-        "pressureType": "PSI",
-        "hoursAdjustToTire": 0.0,
-        "milesAdjustToTire": 0.0,
-        "isMobInstall": true,
-      };
+      _updateDiagram(
+        m:            m,
+        tyreData:     tyreData,
+        tireSerialNo: tireSerialNo,
+        outside:      outside,
+        inside:       inside,
+        middle:       middle,
+        wheelPos:     wheelPos,
+      );
 
-      print("🚀 SUBMITTING PAYLOAD:");
-      print(jsonEncode(payload));
 
-      final success = await service.submitInspection(payload);
-
-      if (success) {
-        // ✅ SUCCESS
-        try {
-          final vehicleCtrl = Get.find<VehicleInspeController>();
-          await vehicleCtrl.fetchInspectionData();
-        } catch (_) {}
-
-        Get.back();
-        Get.back();
-        Get.snackbar(
-          "Success",
-          "Tyre Installed Successfully",
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
-      } else {
-        // ❌ SAHI JAGAH — jab API fail hoti hai tab print hoga
-        print("❌ ================================================");
-        print("❌ BACKEND BUG REPORT — BACKEND TEAM KO DIKHAO");
-        print("❌ ================================================");
-        print("❌ API: POST /api/Inspection/InstallTire");
-        print("❌ HTTP Status: 500");
-        print("❌ wheelPosition sent: ${payload['wheelPosition']}");
-        print("❌ vehicleId: ${payload['vehicleId']}");
-        print("❌ tireId: ${payload['tireId']}");
-        print("❌ axleConfig: 22 (2 axles x 2 tyres = 4 positions)");
-        print("❌ ------------------------------------------------");
-        print("❌ ROOT CAUSE:");
-        print("❌ InspectionRepository.cs LINE 249");
-        print("❌ Array sirf [1L, 1R] handle kar raha hai");
-        print("❌ [2L] aur [2R] array mein NAHI hain");
-        print("❌ ------------------------------------------------");
-        print("❌ PROOF:");
-        print("❌ wheelPosition=1L → STATUS 200 ✅ WORKS");
-        print("❌ wheelPosition=1R → STATUS 200 ✅ WORKS");
-        print("❌ wheelPosition=2L → STATUS 500 ❌ CRASH");
-        print("❌ wheelPosition=2R → STATUS 500 ❌ CRASH");
-        print("❌ ------------------------------------------------");
-        print("❌ FIX NEEDED:");
-        print("❌ axleConfig=22 ke liye array mein");
-        print("❌ [1L, 1R, 2L, 2R] — 4 positions honi chahiye");
-        print("❌ Abhi sirf [1L, 1R] — 2 positions hain");
-        print("❌ ================================================");
-
-        Get.snackbar(
-          "Error",
-          "Server error — backend team ko report karo",
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
-    } catch (e) {
-      // ❌ EXCEPTION CASE
-      print("❌ ================================================");
-      print("❌ BACKEND BUG REPORT — EXCEPTION");
-      print("❌ ================================================");
-      print("❌ wheelPosition: ${model.value.wheelPosition}");
-      print("❌ vehicleId: ${model.value.vehicleId}");
-      print("❌ tireId: ${model.value.tireId}");
-      print("❌ Error: $e");
-      print("❌ FILE: InspectionRepository.cs LINE 249");
-      print("❌ Array missing positions: 2L and 2R");
-      print("❌ ================================================");
+      Get.back();
+      Get.back();
 
       Get.snackbar(
-        "Error",
-        "Failed to install tire: $e",
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+        '✅ Installed',
+        '$tireSerialNo → $wheelPos (Locally Saved)',
+        backgroundColor: Colors.green,
+        colorText:       Colors.white,
+        duration:        const Duration(seconds: 3),
+        snackPosition:   SnackPosition.TOP,
       );
+
+    } catch (e) {
+      print('❌ Install error: $e');
+      Get.snackbar('Error', 'Failed: $e',
+          backgroundColor: Colors.red, colorText: Colors.white);
     } finally {
       isSubmitting.value = false;
     }
   }
 
-  void updateTreadDepth(String value) {
-    // Update tread depth logic here
-    model.value.currentTreadDepth = double.tryParse(value) ?? 0.0;
+
+  void _updateDiagram({
+    required InstallTireModel m,
+    required TyreModel?       tyreData,
+    required String           tireSerialNo,
+    required double           outside,
+    required double           inside,
+    required double           middle,
+    required String           wheelPos,
+  }) {
+    try {
+      final vehicleCtrl = Get.find<VehicleInspeController>();
+
+      final localTyre = TyreModel(
+        tireId:            m.tireId,
+        tireSerialNo:      tireSerialNo,
+        wheelPosition:     wheelPos,
+
+        currentTreadDepth: middle,
+        outsideTread:      outside,
+        insideTread:       inside,
+        currentPressure:   _sanitizePressure(m.currentPressure),
+
+        currentHours:      tyreData?.currentHours      ?? 0.0,
+        percentageWorn:    tyreData?.percentageWorn     ?? 0.0,
+        originalTread:     tyreData?.originalTread      ?? safeOriginalTread,
+        sizeName:          tyreData?.sizeName            ?? '',
+        typeName:          tyreData?.typeName            ?? '',
+        manufacturerName:  tyreData?.manufacturerName   ?? '',
+
+        dispositionId:     installedDispositionId.value,
+        casingConditionId: selectedCasingConditionId.value,
+        wearConditionId:   selectedWearConditionsId.value,
+      );
+
+      vehicleCtrl.addInstalledTyreLocally(localTyre);
+
+      print('✅ Diagram SVG updated: $wheelPos → $tireSerialNo');
+      print('   tread=$middle | pressure=${m.currentPressure} | size=${tyreData?.sizeName}');
+    } catch (e) {
+      print('⚠️ VehicleInspeController not found: $e');
+    }
   }
 
+  // ════════════════════════════════════════════════════════════
+  // INVENTORY SE HATAO
+  // ════════════════════════════════════════════════════════════
+  void _removeFromInventory(int tireId) {
+    try {
+      final sc = Get.find<SearchInstallTireController>();
+      sc.allTyres.removeWhere((t)     => t.tireId == tireId);
+      sc.visibleTyres.removeWhere((t) => t.tireId == tireId);
+      print('✅ Removed from inventory list: tireId=$tireId');
+    } catch (e) {
+      print('⚠️ SearchCtrl not found: $e');
+    }
+  }
+
+  // ════════════════════════════════════
+  // DISPOSE
+  // ════════════════════════════════════
   @override
   void onClose() {
     commentsController.dispose();
-    treadDepthController.dispose();
     previousCommentController.dispose();
     wearConditionsId.dispose();
     casingConditionsId.dispose();

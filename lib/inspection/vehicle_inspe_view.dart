@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../views/rotate_tyres_view.dart';
+
 class VehicleInspeView extends StatelessWidget {
   const VehicleInspeView({super.key});
   @override
@@ -147,11 +149,6 @@ class VehicleInspeView extends StatelessWidget {
               decoration: _inputDecoration(),
             ),
 
-            const SizedBox(height: 8),
-            Text(
-              "& miles on this vehicle",
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-            ),
             const SizedBox(height: 32),
             const Text(
               'Update Hours',
@@ -191,6 +188,7 @@ class VehicleInspeView extends StatelessWidget {
                 fillColor: Colors.white,
                 hintText: 'Comments go here (Max 200 characters)',
                 border: OutlineInputBorder(
+
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
@@ -205,7 +203,6 @@ class VehicleInspeView extends StatelessWidget {
               "Vehicle No: ${c.vehicleNumberCtrl.text}",
               style: const TextStyle(color: Colors.black54, fontSize: 13),
             ),
-
             /// LEGEND
             Row(
               children: const [
@@ -305,7 +302,25 @@ class VehicleInspeView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Rotate Tires button removed
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(
+                            color: Colors.red, // 👉 outline color
+                            width: 1.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        onPressed: () {
+                          Get.to(() => RotateTyresView());
+                        },
+                        icon: const Icon(Icons.sync, color: Colors.red),
+                        label: const Text(
+                          'Rotate Tyres',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
                     ],
                   ),
                   SizedBox(height: 11),

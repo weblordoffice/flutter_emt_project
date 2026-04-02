@@ -41,28 +41,28 @@ class _HomeViewState extends State<HomeView> {
 
       final String message = isTyre
           ? (args["type"] == "update"
-                ? "Tire updated successfully"
-                : "New Tire submitted successfully")
+          ? "Tire updated successfully"
+          : "New Tire submitted successfully")
           : (args["type"] == "update"
-                ? "Vehicle updated successfully"
-                : "New Vehicle Created Successfully. Vehicle with ID ${args["vehicleNo"]} created successfully. Redirecting to vehicle inspection home page...");
+          ? "Vehicle updated successfully"
+          : "New Vehicle Created successfully.");
 
       final String numberText = isTyre
           ? "Tire Serial No: ${args["serialNo"] ?? '-'}"
-          : "";
+          : "Vehicle with Id: Vehicle ${args["vehicleNo"] ?? '-'} Created Successfully.";
 
       final int? vehicleId = isTyre
           ? null
           : (args["vehicleId"] is int
-                ? args["vehicleId"]
-                : int.tryParse(args["vehicleId"].toString()));
+          ? args["vehicleId"]
+          : int.tryParse(args["vehicleId"].toString()));
 
       print("DEBUG: vehicleId = $vehicleId");
 
       await ctrl.fetchHome();
       await ctrl.fetchReportDashboardDataHome();
 
-      AppSnackbar.success("$message");
+      AppSnackbar.success("$message\n$numberText");
 
       Future.delayed(const Duration(seconds: 3), () {
         if (!isTyre && vehicleId != null) {
@@ -70,6 +70,20 @@ class _HomeViewState extends State<HomeView> {
         }
       });
     });
+  }
+
+  String _getLocationText() {
+    final account = (ctrl.homeData.value?.parentAccount?.isNotEmpty == true)
+        ? ctrl.homeData.value!.parentAccount!
+        : ctrl.selectedParentAccountName.value;
+
+    final location = (ctrl.homeData.value?.location?.isNotEmpty == true)
+        ? ctrl.homeData.value!.location!
+        : ctrl.selectedLocationName.value;
+
+    final accountText  = account.isNotEmpty  ? account  : '--';
+    final locationText = location.isNotEmpty ? location : '--';
+    return "$accountText - $locationText";
   }
 
   @override
@@ -121,13 +135,15 @@ class _HomeViewState extends State<HomeView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // ─── Welcome Block ───
-                            Text(
-                              AppLocalizations.of(context)!.greeting,
-                              style: const TextStyle(
-                                color: AppColors.textWhite,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                            // ─── Greeting ───
+                            Obx(
+                                  () => Text(
+                                "${AppLocalizations.of(context)!.greeting}, ${ctrl.username.value},",
+                                style: const TextStyle(
+                                  color: AppColors.textWhite,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -146,51 +162,23 @@ class _HomeViewState extends State<HomeView> {
                                       color: AppColors.textWhite,
                                     ),
                                     SizedBox(
-                                      width:
-                                          MediaQuery.of(context).size.width *
-                                          0.5,
-                                      child: Obx(() {
-                                        final parent =
-                                            (ctrl
-                                                        .homeData
-                                                        .value
-                                                        ?.parentAccount ??
-                                                    ctrl
-                                                        .selectedParentAccountName
-                                                        .value)
-                                                .trim();
-                                        final loc =
-                                            (ctrl.homeData.value?.location ??
-                                                    ctrl
-                                                        .selectedLocationName
-                                                        .value)
-                                                .trim();
-                                        final line =
-                                            parent.isEmpty && loc.isEmpty
-                                            ? '—'
-                                            : parent.isEmpty
-                                            ? loc
-                                            : loc.isEmpty
-                                            ? parent
-                                            : parent == loc
-                                            ? parent
-                                            : '$parent · $loc';
-                                        return Text(
-                                          line,
+                                      width: MediaQuery.of(context).size.width * 0.5,
+                                      child: Obx(
+                                            () => Text(
+                                          _getLocationText(),
                                           style: const TextStyle(
                                             color: AppColors.textWhite,
                                             fontWeight: FontWeight.bold,
                                           ),
-                                        );
-                                      }),
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
-
                                 InkWell(
                                   onTap: () async {
                                     final updated = await Get.to(
-                                      () => ChangeAccountView(),
+                                          () => ChangeAccountView(),
                                     );
                                     if (updated == true) {
                                       await ctrl.fetchHome();
@@ -216,10 +204,9 @@ class _HomeViewState extends State<HomeView> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Search box
+                            // ─── Search Box ───
                             GestureDetector(
-                              onTap: () =>
-                                  Get.to(() => SearchVehicleTyreView()),
+                              onTap: () => Get.to(() => SearchVehicleTyreView()),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 12,
@@ -235,9 +222,7 @@ class _HomeViewState extends State<HomeView> {
                                     SizedBox(width: 10),
                                     Text(
                                       'Search Vehicle / Tire for inspection',
-                                      style: TextStyle(
-                                        color: AppColors.textGrey,
-                                      ),
+                                      style: TextStyle(color: AppColors.textGrey),
                                     ),
                                   ],
                                 ),
@@ -248,61 +233,52 @@ class _HomeViewState extends State<HomeView> {
                             // ─── Total Tires + Vehicles Cards ───
                             Row(
                               children: [
+                                // ─── Total Tires Card ───
                                 Expanded(
                                   child: InkWell(
-                                    onTap: () =>
-                                        Get.toNamed(AppPages.ALL_TYRE_WIEW),
+                                    onTap: () => Get.toNamed(AppPages.ALL_TYRE_WIEW),
                                     child: Container(
-                                      margin: const EdgeInsets.only(right: 4),
-                                      padding: const EdgeInsets.all(14),
+                                      margin: const EdgeInsets.only(right: 8),
+                                      padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
                                         color: AppColors.primary,
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                          color: Colors.white24,
-                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: Colors.white24),
                                       ),
                                       child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Row(
                                             children: [
                                               SvgPicture.asset(
                                                 'assets/svgImage/total-tires-icon.svg',
-                                                width: 38,
-                                                height: 38,
-                                                colorFilter:
-                                                    const ColorFilter.mode(
-                                                      Colors.red,
-                                                      BlendMode.srcIn,
-                                                    ),
+                                                width: 40,
+                                                height: 40,
+                                                colorFilter: const ColorFilter.mode(
+                                                  Colors.red,
+                                                  BlendMode.srcIn,
+                                                ),
                                               ),
                                               const SizedBox(width: 10),
                                               Column(
                                                 crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
+                                                CrossAxisAlignment.start,
                                                 children: [
                                                   const Text(
                                                     'Total Tires',
                                                     style: TextStyle(
-                                                      color:
-                                                          AppColors.textWhite,
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.bold,
+                                                      color: AppColors.textWhite,
                                                     ),
                                                   ),
                                                   const SizedBox(height: 6),
+                                                  // ✅ tyreCount — local-first, network se update
                                                   Obx(
-                                                    () => Text(
-                                                      ctrl.tyreCount.value
-                                                          .toString(),
+                                                        () => Text(
+                                                      ctrl.tyreCount.value.toString(),
                                                       style: const TextStyle(
                                                         color: Colors.white,
-                                                        fontSize: 22,
-                                                        fontWeight:
-                                                            FontWeight.bold,
+                                                        fontSize: 26,
+                                                        fontWeight: FontWeight.bold,
                                                       ),
                                                     ),
                                                   ),
@@ -310,18 +286,15 @@ class _HomeViewState extends State<HomeView> {
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 10),
                                           const Align(
                                             alignment: Alignment.bottomRight,
                                             child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.end,
+                                              mainAxisAlignment: MainAxisAlignment.end,
                                               children: [
                                                 Text(
                                                   'View',
                                                   style: TextStyle(
                                                     color: AppColors.textWhite,
-                                                    fontSize: 13,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
@@ -329,7 +302,6 @@ class _HomeViewState extends State<HomeView> {
                                                   ' >',
                                                   style: TextStyle(
                                                     color: Colors.red,
-                                                    fontSize: 13,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
@@ -341,62 +313,53 @@ class _HomeViewState extends State<HomeView> {
                                     ),
                                   ),
                                 ),
+
+                                // ─── Vehicles Card ───
                                 Expanded(
                                   child: InkWell(
-                                    onTap: () =>
-                                        Get.to(() => AllVehicleListView()),
+                                    onTap: () => Get.to(() => AllVehicleListView()),
                                     child: Container(
-                                      margin: const EdgeInsets.only(left: 4),
-                                      padding: const EdgeInsets.all(14),
+                                      margin: const EdgeInsets.only(left: 8),
+                                      padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
                                         color: AppColors.primary,
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                          color: Colors.white24,
-                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: Colors.white24),
                                       ),
                                       child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Row(
                                             children: [
                                               SvgPicture.asset(
                                                 'assets/svgImage/vehicle-icon.svg',
-                                                width: 38,
-                                                height: 38,
-                                                colorFilter:
-                                                    const ColorFilter.mode(
-                                                      Colors.red,
-                                                      BlendMode.srcIn,
-                                                    ),
+                                                width: 40,
+                                                height: 40,
+                                                colorFilter: const ColorFilter.mode(
+                                                  Colors.red,
+                                                  BlendMode.srcIn,
+                                                ),
                                               ),
-                                              const SizedBox(width: 10),
+                                              const SizedBox(width: 8),
                                               Column(
                                                 crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
+                                                CrossAxisAlignment.start,
                                                 children: [
                                                   const Text(
                                                     'Vehicles',
                                                     style: TextStyle(
-                                                      color:
-                                                          AppColors.textWhite,
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.bold,
+                                                      color: AppColors.textWhite,
                                                     ),
                                                   ),
                                                   const SizedBox(height: 6),
+                                                  // ✅ vehicleCount — local-first, network se update
                                                   Obx(
-                                                    () => Text(
-                                                      ctrl.vehicleCount.value
-                                                          .toString(), // homeCount ki jagah ise use karein
+                                                        () => Text(
+                                                      ctrl.vehicleCount.value.toString(),
                                                       style: const TextStyle(
-                                                        color:
-                                                            AppColors.textWhite,
-                                                        fontSize: 22,
-                                                        fontWeight:
-                                                            FontWeight.bold,
+                                                        color: AppColors.textWhite,
+                                                        fontSize: 26,
+                                                        fontWeight: FontWeight.bold,
                                                       ),
                                                     ),
                                                   ),
@@ -404,18 +367,15 @@ class _HomeViewState extends State<HomeView> {
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 10),
                                           const Align(
                                             alignment: Alignment.bottomRight,
                                             child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.end,
+                                              mainAxisAlignment: MainAxisAlignment.end,
                                               children: [
                                                 Text(
                                                   'View',
                                                   style: TextStyle(
                                                     color: AppColors.textWhite,
-                                                    fontSize: 13,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
@@ -423,7 +383,6 @@ class _HomeViewState extends State<HomeView> {
                                                   ' >',
                                                   style: TextStyle(
                                                     color: Colors.red,
-                                                    fontSize: 13,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
@@ -462,14 +421,12 @@ class _HomeViewState extends State<HomeView> {
                                 const SizedBox(height: 6),
                                 Text(
                                   data?.lastInspection ?? '--',
-                                  style: const TextStyle(
-                                    color: AppColors.textGrey,
-                                  ),
+                                  style: const TextStyle(color: AppColors.textGrey),
                                 ),
                               ],
                             ),
                             Obx(
-                              () => ElevatedButton.icon(
+                                  () => ElevatedButton.icon(
                                 onPressed: ctrl.isLoading.value
                                     ? null
                                     : () => ctrl.syncInspections(),
@@ -510,45 +467,36 @@ class _HomeViewState extends State<HomeView> {
                             const SizedBox(height: 12),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: () => Get.to(
-                                      () => const ViewInspectionPage(),
-                                      arguments: 0,
-                                    ),
-                                    child: Obx(
-                                      () => inspectionCard(
-                                        title: 'Unsynced Inspection',
-                                        count:
-                                            ctrl
-                                                .homeData
-                                                .value
-                                                ?.unsyncedInspections
-                                                .toString() ??
-                                            '0',
-                                      ),
+                                GestureDetector(
+                                  onTap: () => Get.to(
+                                        () => const ViewInspectionPage(),
+                                    arguments: 0,
+                                  ),
+                                  child: Obx(
+                                        () => inspectionCard(
+                                      title: 'Unsynced Inspection',
+                                      count: ctrl.homeData.value
+                                          ?.unsyncedInspections
+                                          .toString() ??
+                                          '0',
                                     ),
                                   ),
                                 ),
                                 const SizedBox(width: 12),
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: () => Get.to(
-                                      () => const InspectionVehicleTyreView(),
-                                      arguments: 1,
-                                    ),
-                                    child: Obx(
-                                      () => inspectionCard(
-                                        title: 'Synced Inspection',
-                                        count:
-                                            ctrl
-                                                .homeData
-                                                .value
-                                                ?.syncedInspections
-                                                .toString() ??
-                                            '0',
-                                      ),
+                                GestureDetector(
+                                  onTap: () => Get.to(
+                                        () => const InspectionVehicleTyreView(),
+                                    arguments: 1,
+                                  ),
+                                  child: Obx(
+                                        () => inspectionCard(
+                                      title: 'Synced Inspection',
+                                      count: ctrl.homeData.value
+                                          ?.syncedInspections
+                                          .toString() ??
+                                          '0',
                                     ),
                                   ),
                                 ),
@@ -576,114 +524,76 @@ class _HomeViewState extends State<HomeView> {
                             const SizedBox(height: 12),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
-                                Expanded(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: Colors.red,
-                                        width: 1,
-                                      ),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: [
-                                          const Text(
-                                            "Vehicle Inspection",
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                // ─── Vehicle Inspection Card ───
+                                Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.red, width: 1),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      children: [
+                                        const Text(
+                                          "Vehicle Inspection",
+                                          style: TextStyle(fontSize: 18),
+                                        ),
+                                        Obx(
+                                              () => Text(
+                                            ctrl.homeCount.value?.vehicleCount
+                                                ?.toString() ??
+                                                "0",
+                                            style: const TextStyle(fontSize: 20),
                                           ),
-                                          const SizedBox(height: 6),
-                                          Obx(
-                                            () => Text(
-                                              ctrl.homeCount.value?.vehicleCount
-                                                      ?.toString() ??
-                                                  "0",
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
+                                        ),
+                                        TextButton(
+                                          onPressed: () => Get.to(
+                                                () => InspectionVehicleTyreView(),
                                           ),
-                                          TextButton(
-                                            onPressed: () => Get.to(
-                                              () => InspectionVehicleTyreView(),
-                                            ),
-                                            child: const Text(
-                                              "View >",
-                                              style: TextStyle(
-                                                color: Colors.red,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
+                                          child: const Text(
+                                            "view >",
+                                            style: TextStyle(color: Colors.red),
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: Colors.red,
-                                        width: 1,
-                                      ),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: [
-                                          const Text(
-                                            "Tire Inspection",
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+
+                                // ─── Tire Inspection Card ───
+                                Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.red, width: 1),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      children: [
+                                        const Text(
+                                          "Tire Inspection",
+                                          style: TextStyle(fontSize: 20),
+                                        ),
+                                        Obx(
+                                              () => Text(
+                                            ctrl.homeCount.value?.totalTiresCount
+                                                ?.toString() ??
+                                                "0",
+                                            style: const TextStyle(fontSize: 20),
                                           ),
-                                          const SizedBox(height: 6),
-                                          Obx(
-                                            () => Text(
-                                              ctrl
-                                                      .homeCount
-                                                      .value
-                                                      ?.totalTiresCount
-                                                      ?.toString() ??
-                                                  "0",
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
+                                        ),
+                                        TextButton(
+                                          onPressed: () => Get.to(
+                                                () => InspectionVehicleTyreView(),
                                           ),
-                                          TextButton(
-                                            onPressed: () => Get.to(
-                                              () => InspectionVehicleTyreView(),
-                                            ),
-                                            child: const Text(
-                                              "View >",
-                                              style: TextStyle(
-                                                color: Colors.red,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
+                                          child: const Text(
+                                            "view >",
+                                            style: TextStyle(color: Colors.red),
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -701,7 +611,7 @@ class _HomeViewState extends State<HomeView> {
             }),
           ),
 
-          // Loader overlay
+          // ─── Loader Overlay ───
           Obx(() {
             if (!ctrl.isLoading.value) return const SizedBox.shrink();
             return Positioned.fill(
@@ -726,7 +636,6 @@ class _HomeViewState extends State<HomeView> {
       bottomNavigationBar: InkWell(
         onTap: () async {
           await Get.to(() => SearchVehicleTyreView());
-
           ctrl.fetchHome();
           ctrl.loadTyreCountByAccount();
           ctrl.loadVehicleCountByAccount();
@@ -776,36 +685,32 @@ class _HomeViewState extends State<HomeView> {
 
   Widget inspectionCard({required String title, required String count}) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.red),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            softWrap: true,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(fontSize: 16)),
+              Text(count, style: const TextStyle(fontSize: 18)),
+            ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            count,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            "View >",
-            textAlign: TextAlign.end,
-            style: TextStyle(
-              color: AppColors.buttonDanger,
-              fontWeight: FontWeight.bold,
-            ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                "View >",
+                style: TextStyle(
+                  color: AppColors.buttonDanger,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
         ],
       ),

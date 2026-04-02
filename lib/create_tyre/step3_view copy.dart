@@ -109,6 +109,7 @@ class Step3View extends StatelessWidget {
     dynamic value,
     bool enabled = true,
     bool clearIcon = false,
+    TextInputType keyboard = TextInputType.text,
     String? Function(String?)? validator,
   }) {
     final TextEditingController effectiveController =

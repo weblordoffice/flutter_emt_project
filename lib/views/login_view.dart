@@ -69,7 +69,7 @@ class LoginView extends StatelessWidget {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          "Welcome",
+                          "Welcome!",
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,

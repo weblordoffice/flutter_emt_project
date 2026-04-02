@@ -185,7 +185,7 @@ class ChangeAccountView extends StatelessWidget {
                     controller: searchCtrl,
                     decoration: const InputDecoration(
                       prefixIcon: Icon(Icons.search),
-                      hintText: "Filter Parent Account",
+                      hintText: "Search account",
                       border: OutlineInputBorder(),
                     ),
                     onChanged: (v) {
@@ -207,7 +207,10 @@ class ChangeAccountView extends StatelessWidget {
                     itemBuilder: (_, i) {
                       final item = filtered[i];
                       return ListTile(
-                        title: Text(item.accountName),
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [Text(item.accountName), Divider()],
+                        ),
                         onTap: () async {
                           ctrl.onAccountChanged(item);
                           Get.back();
@@ -253,7 +256,7 @@ class ChangeAccountView extends StatelessWidget {
                     controller: searchCtrl,
                     decoration: const InputDecoration(
                       prefixIcon: Icon(Icons.search),
-                      hintText: "Filter Location",
+                      hintText: "Search location",
                       border: OutlineInputBorder(),
                     ),
                     onChanged: (v) {
@@ -275,7 +278,10 @@ class ChangeAccountView extends StatelessWidget {
                     itemBuilder: (_, i) {
                       final item = filtered[i];
                       return ListTile(
-                        title: Text(item.locationName),
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [Text(item.locationName), Divider()],
+                        ),
                         onTap: () {
                           ctrl.selectedLocation.value = item;
                           Get.back();

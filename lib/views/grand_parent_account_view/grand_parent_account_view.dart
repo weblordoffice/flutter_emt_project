@@ -144,21 +144,24 @@ class GrandparentAccountView extends StatelessWidget {
               children: [
                 Expanded(
                   child: Obx(
-                    () => _bottomButtons(
+                        () => _bottomButtons(
                       onNext: c.grandparentName.value.trim().isEmpty
                           ? null
                           : () {
-                              if (c.createFormKey.currentState!.validate()) {
-                                c.createGrandparent();
-                              }
-                            },
+                        if (c.createFormKey.currentState!.validate()) {
+                          c.createGrandparent();
+                        }
+                      },
                       nextText: "Save",
                     ),
                   ),
                 ),
                 const SizedBox(width: 15),
                 Expanded(
-                  child: _bottomButtons(onNext: c.next, nextText: "Next"),
+                  child: _bottomButtons(
+                    onNext: c.next,
+                    nextText: "Next",
+                  ),
                 ),
               ],
             ),
@@ -166,9 +169,7 @@ class GrandparentAccountView extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Widget _assignAccount() {
+  }  Widget _assignAccount() {
     return Obx(
       () => Padding(
         padding: EdgeInsets.all(16),
@@ -184,7 +185,7 @@ class GrandparentAccountView extends StatelessWidget {
                   .map(
                     (e) => DropdownMenuItem(
                       value: e['id'],
-                      child: Text(e['name']),
+                      child: Text("${e['id']} : ${e['name']}"),
                     ),
                   )
                   .toList(),
@@ -203,7 +204,7 @@ class GrandparentAccountView extends StatelessWidget {
                   .map(
                     (e) => DropdownMenuItem(
                       value: e['id'],
-                      child: Text(e['name']),
+                      child: Text("${e['id']} : ${e['name']}"),
                     ),
                   )
                   .toList(),

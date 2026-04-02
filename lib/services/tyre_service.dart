@@ -9,7 +9,7 @@ import 'package:emtrack/utils/secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
-class TyreService {
+class     TyreService {
   // 🔹 GET BY ID URL
   static String get _getByIdUrl =>
       "${ApiConstants.baseUrl + ApiConstants.getTyresByAccount}/";

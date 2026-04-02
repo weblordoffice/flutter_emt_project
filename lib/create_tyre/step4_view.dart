@@ -167,6 +167,7 @@ class Step4View extends StatelessWidget {
 
     bool enabled = true,
     bool clearIcon = false,
+    TextInputType keyboardType = TextInputType.text,
     FocusNode? focusNode,
     String? Function(String?)? validator,
     Function(String value)? onChanged,

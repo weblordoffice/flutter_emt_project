@@ -1,7 +1,6 @@
 import 'package:emtrack/routes/app_pages.dart';
 import 'package:emtrack/utils/secure_storage.dart';
 import 'package:emtrack/controllers/all_vehicles_controller.dart';
-import '../inspection/vehicle_inspe_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../models/masterDataMobileModel/tire_size_model.dart';
@@ -122,20 +121,19 @@ class VehicleController extends GetxController {
           .where((t) => t.tireSizeName.trim().isNotEmpty)
           .toList();
 
-      manufacturerList.value = manufacturers
-          .map((e) => e.manufacturerName)
-          .toList();
+      manufacturerList.value =
+          manufacturers.map((e) => e.manufacturerName).toList();
 
-      tyreSizeList.value = tireSizes
-          .map((e) => e.tireSizeName)
-          .toSet()
-          .toList();
+      tyreSizeList.value =
+          tireSizes.map((e) => e.tireSizeName).toSet().toList();
 
-      modelList.value = models.map((e) => e.modelName).toSet().toList();
+      modelList.value =
+          models.map((e) => e.modelName).toSet().toList();
 
       print("✅ Manufacturers: ${manufacturerList.length}");
       print("✅ TyreSizes: ${tyreSizeList.length}");
       print("✅ Models: ${modelList.length}");
+
     } catch (e) {
       print("❌ Master data load error: $e");
       Get.snackbar(
@@ -145,8 +143,7 @@ class VehicleController extends GetxController {
         colorText: Colors.white,
       );
     } finally {
-      isLoadingMasterData.value =
-          false; // ✅ Loading khatam — success ya error dono pe
+      isLoadingMasterData.value = false; // ✅ Loading khatam — success ya error dono pe
     }
   }
 
@@ -155,7 +152,7 @@ class VehicleController extends GetxController {
     manufacturer.value = value;
 
     final m = manufacturers.firstWhere(
-      (e) => e.manufacturerName == value,
+          (e) => e.manufacturerName == value,
       orElse: () => manufacturers.first,
     );
 
@@ -171,7 +168,6 @@ class VehicleController extends GetxController {
     type.value = '';
     typeId.value = 0;
     model.value = '';
-    selectedModel.value = ''; // Clear selectedModel
     modelId.value = 0;
     modelList.clear();
 
@@ -186,7 +182,7 @@ class VehicleController extends GetxController {
     type.value = value;
 
     final t = types.firstWhere(
-      (e) => e.typeName == value,
+          (e) => e.typeName == value,
       orElse: () => types.first,
     );
 
@@ -200,7 +196,6 @@ class VehicleController extends GetxController {
 
     // RESET downstream
     model.value = '';
-    selectedModel.value = ''; // Clear selectedModel
     modelId.value = 0;
 
     print("🔧 Type: $value (ID: ${t.typeId})");
@@ -212,7 +207,6 @@ class VehicleController extends GetxController {
   /* ---------------- MODEL ---------------- */
   void selectModel(String value) {
     model.value = value;
-    selectedModel.value = value; // Update selectedModel
 
     final matched = models.where((e) => e.modelName == value).toList();
 
@@ -320,8 +314,8 @@ class VehicleController extends GetxController {
         cuttingId: 0,
         trackingMethod: trackingMethodValue,
         severityComments: comments.value,
-        recommendedPressure: ((axel1Pressure.value + axel2Pressure.value) / 2)
-            .toDouble(),
+        recommendedPressure:
+        ((axel1Pressure.value + axel2Pressure.value) / 2).toDouble(),
         createdBy: parentAccountId,
         createdDate: DateTime.now(),
         updatedBy: parentAccountId,
@@ -339,6 +333,7 @@ class VehicleController extends GetxController {
         Get.snackbar('Error', 'VEHICLE creation failed');
         return;
       }
+
       final String vehicleNoToSend = vehicleNumber.value;
       resetForm();
 
@@ -361,53 +356,23 @@ class VehicleController extends GetxController {
   }
 
   /* ---------------- VALIDATION ---------------- */
-  bool validateVehicleNumber(String vehicleNo) {
-    vehicleNumberError.value = '';
-
-    if (vehicleNo.trim().isEmpty) {
-      vehicleNumberError.value = "Vehicle id is required";
-      return false;
-    }
-
-    if (Get.isRegistered<AllVehicleController>()) {
-      final vehicleList = Get.find<AllVehicleController>().vehicleList;
-      final isDuplicate = vehicleList.any(
-        (v) => v.vehicleNumber!.toLowerCase() == vehicleNo.trim().toLowerCase(),
-      );
-
-      if (isDuplicate) {
-        vehicleNumberError.value = "This vehicle number already exists";
-        Get.snackbar(
-          "Error",
-          "This vehicle number already exists",
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return false;
-      }
-    }
-
-    return true;
-  }
-
   bool _validateForm() {
     _clearErrors();
     bool isValid = true;
 
     if (vehicleNumber.value.trim().isEmpty) {
-      vehicleNumberError.value = "Vehicle id is required";
+      vehicleNumberError.value = "VEHICLE ID is required";
       isValid = false;
     } else {
       if (Get.isRegistered<AllVehicleController>()) {
         final vehicleList = Get.find<AllVehicleController>().vehicleList;
         final isDuplicate = vehicleList.any(
-          (v) =>
-              v.vehicleNumber!.toLowerCase() ==
+              (v) =>
+          v.vehicleNumber!.toLowerCase() ==
               vehicleNumber.value.trim().toLowerCase(),
         );
         if (isDuplicate) {
-          vehicleNumberError.value = "This vehicle number already exists";
+          vehicleNumberError.value = "VEHICLE Number is already taken";
           isValid = false;
         }
       }

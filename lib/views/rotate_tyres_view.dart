@@ -75,9 +75,7 @@ class _RotateTyresViewState extends State<RotateTyresView> {
                   if (controller.bufferTyre != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text(
-                          "Please place the tyre in a slot before saving",
-                        ),
+                        content: Text("Please place the tyre in a slot before saving"),
                         backgroundColor: Colors.red,
                       ),
                     );
@@ -90,6 +88,7 @@ class _RotateTyresViewState extends State<RotateTyresView> {
                       backgroundColor: Colors.green,
                     ),
                   );
+
                 },
                 child: Container(
                   padding: EdgeInsets.all(8),

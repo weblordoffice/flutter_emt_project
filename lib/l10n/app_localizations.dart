@@ -104,7 +104,7 @@ abstract class AppLocalizations {
   /// No description provided for @greeting.
   ///
   /// In en, this message translates to:
-  /// **'Welcome test test,'**
+  /// **'Welcome!'**
   String get greeting;
 
   /// No description provided for @settings.

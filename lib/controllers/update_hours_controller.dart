@@ -1,6 +1,5 @@
 import 'package:emtrack/inspection/vehicle_inspe_controller.dart';
 import 'package:emtrack/inspection/vehicle_inspe_model.dart';
-import 'package:emtrack/inspection/update_hours_date_picker_dialog.dart';
 import 'package:emtrack/models/update_hours_model.dart';
 import 'package:emtrack/utils/secure_storage.dart';
 import 'package:flutter/material.dart';
@@ -73,16 +72,16 @@ class UpdateHoursController extends GetxController {
       initialDate = DateTime.now();
     }
 
-    final result = await showUpdateHoursDatePicker(
-      context,
+    DateTime? picked = await showDatePicker(
+      context: context,
       initialDate: initialDate,
       firstDate: DateTime(2000),
-      lastDate: DateTime.now().add(Duration(minutes: 5)),
+      lastDate: DateTime.now(),
     );
 
-    if (result != null && result.date != null) {
+    if (picked != null) {
       // ✅ Consistent dd/MM/yyyy format
-      final formatted = DateFormat("dd/MM/yyyy").format(result.date!);
+      final formatted = DateFormat("dd/MM/yyyy").format(picked);
       surveyDateController.text = formatted;
       surveyDate.value = formatted;
     }

@@ -10,16 +10,12 @@ import '../views/tyre_view.dart';
 class SearchInstallTireController extends GetxController {
   final TyreService service = TyreService();
 
-  /// 🔄 Loader
   final RxBool isLoading = false.obs;
 
-  /// 📦 API data (Only Inventory)
   final RxList<TyreModel> allTyres = <TyreModel>[].obs;
 
-  /// 👁 Visible (Search filtered)
   final RxList<TyreModel> visibleTyres = <TyreModel>[].obs;
 
-  /// 🔍 Search text
   final RxString searchText = ''.obs;
 
   @override
@@ -28,9 +24,6 @@ class SearchInstallTireController extends GetxController {
     fetchInventoryTyres();
   }
 
-  // ==================================================
-  // 📡 FETCH INVENTORY TYRES ONLY
-  // ==================================================
   Future<void> fetchInventoryTyres() async {
     try {
       isLoading.value = true;

@@ -25,7 +25,7 @@ class UserManagementView extends StatelessWidget {
         leading: const BackButton(color: Colors.white),
       ),
       body: Obx(
-        () => Column(
+            () => Column(
           children: [
             _stepHeader(c),
             Expanded(child: _stepBody(c)),
@@ -74,16 +74,7 @@ class UserManagementView extends StatelessWidget {
             return null;
           },
         ),
-        _dropdown(
-          c,
-          "User Role",
-          c.roles,
-          c.role,
-          validator: (v) {
-            if (v == null || v.isEmpty) return "User Role is required";
-            return null;
-          },
-        ),
+        _dropdown(c, "User Role", c.roles, c.role),
       ]),
     );
   }
@@ -145,16 +136,7 @@ class UserManagementView extends StatelessWidget {
             return null;
           },
         ),
-        _dropdown(
-          c,
-          "Country",
-          c.countries,
-          c.country,
-          validator: (v) {
-            if (v == null || v.isEmpty) return "Country is required";
-            return null;
-          },
-        ),
+        _dropdown(c, "Country", c.countries, c.country),
       ]),
     );
   }
@@ -165,36 +147,9 @@ class UserManagementView extends StatelessWidget {
     return Form(
       key: c.preferenceFormKey,
       child: _form(c, [
-        _dropdown(
-          c,
-          "Language",
-          c.languages,
-          c.language,
-          validator: (v) {
-            if (v == null || v.isEmpty) return "Language is required";
-            return null;
-          },
-        ),
-        _dropdown(
-          c,
-          "Measurement",
-          c.measurements,
-          c.measurement,
-          validator: (v) {
-            if (v == null || v.isEmpty) return "Measurement is required";
-            return null;
-          },
-        ),
-        _dropdown(
-          c,
-          "Pressure Unit",
-          c.pressureUnits,
-          c.pressureUnit,
-          validator: (v) {
-            if (v == null || v.isEmpty) return "Pressure Unit is required";
-            return null;
-          },
-        ),
+        _dropdown(c, "Language", c.languages, c.language),
+        _dropdown(c, "Measurement", c.measurements, c.measurement),
+        _dropdown(c, "Pressure Unit", c.pressureUnits, c.pressureUnit),
       ]),
     );
   }
@@ -221,19 +176,11 @@ class UserManagementView extends StatelessWidget {
             child: OutlinedButton(
               onPressed: c.previous,
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(
-                  color: AppColors.primary,
-                  width: 1.5,
-                ), // ✅ change color here
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                side: const BorderSide(color: AppColors.primary, width: 1.5), // ✅ change color here
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 minimumSize: const Size(double.infinity, 48),
               ),
-              child: Text(
-                "PREVIOUS",
-                style: TextStyle(color: AppColors.primary),
-              ), // ✅ match text color
+              child: Text("PREVIOUS", style: TextStyle(color: AppColors.primary)), // ✅ match text color
             ),
           ),
         if (c.currentStep.value > 0) const SizedBox(width: 12),
@@ -275,15 +222,15 @@ class UserManagementView extends StatelessWidget {
 
   // ================= TEXT FIELD =================
 
-  // ================= TEXT FIELD =================
+// ================= TEXT FIELD =================
 
   Widget _text(
-    String label,
-    TextEditingController controller, {
-    bool obscure = false,
-    FocusNode? focusNode,
-    String? Function(String?)? validator,
-  }) {
+      String label,
+      TextEditingController controller, {
+        bool obscure = false,
+        FocusNode? focusNode,
+        String? Function(String?)? validator,
+      }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
@@ -339,18 +286,17 @@ class UserManagementView extends StatelessWidget {
   // ================= DROPDOWN =================
 
   Widget _dropdown(
-    UserManagementController c,
-    String label,
-    List<String> items,
-    RxString value, {
-    String? Function(String?)? validator,
-  }) {
+      UserManagementController c,
+      String label,
+      List<String> items,
+      RxString value,
+      ) {
     final RxBool touched = false.obs;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Obx(
-        () => InkWell(
+            () => InkWell(
           onTap: () {
             touched.value = true;
             _openSelectionDialog(title: label, items: items, value: value);
@@ -361,7 +307,7 @@ class UserManagementView extends StatelessWidget {
               border: const OutlineInputBorder(),
               errorText: (touched.value && value.value.isEmpty)
                   ? "Please select $label"
-                  : (validator != null ? validator(value.value) : null),
+                  : null,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -532,9 +478,9 @@ class UserManagementView extends StatelessWidget {
           child: isDone
               ? const Icon(Icons.check, color: Colors.white)
               : Text(
-                  "${step + 1}",
-                  style: const TextStyle(color: Colors.white),
-                ),
+            "${step + 1}",
+            style: const TextStyle(color: Colors.white),
+          ),
         ),
         const SizedBox(height: 4),
         Text(title),

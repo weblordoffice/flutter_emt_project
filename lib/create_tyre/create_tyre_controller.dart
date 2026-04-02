@@ -75,43 +75,11 @@ class CreateTyreController extends GetxController {
     }
   }
 
-  bool validateSerialNumber(String serialNo) {
-    tireSerialNoError.value = '';
-
-    if (serialNo.trim().isEmpty) {
-      tireSerialNoError.value = "Tire serial number is required";
-      return false;
-    }
-
-    if (Get.isRegistered<AllTyreController>()) {
-      final allTyres = Get.find<AllTyreController>().allTyres;
-      final isDuplicate = allTyres.any(
-        (t) => t.tireSerialNo?.toLowerCase() == serialNo.trim().toLowerCase(),
-      );
-
-      if (isDuplicate) {
-        tireSerialNoError.value = "This serial number already exists";
-        Get.snackbar(
-          "Error",
-          "This serial number already exists",
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return false;
-      }
-    }
-
-    return true;
-  }
-
   void nextStep() {
     final isValid = formKey.currentState?.validate() ?? false;
     if (!isValid) return;
     if (currentStep.value < 3) currentStep.value++;
-  }
-
-  void previousStep() {
+  }  void previousStep() {
     if (currentStep.value > 0) currentStep.value--;
   }
 
@@ -204,7 +172,7 @@ class CreateTyreController extends GetxController {
     final now = DateTime.now();
 
     registeredDate.text =
-        "${now.day.toString().padLeft(2, '0')}/"
+    "${now.day.toString().padLeft(2, '0')}/"
         "${now.month.toString().padLeft(2, '0')}/"
         "${now.year}";
 
@@ -339,9 +307,23 @@ class CreateTyreController extends GetxController {
       return;
     }
 
-    // Validate serial number for duplicates
-    if (!validateSerialNumber(tireSerialNo.text)) {
-      return;
+    if (Get.isRegistered<AllTyreController>()) {
+      final allTyres = Get.find<AllTyreController>().allTyres;
+      final isDuplicate = allTyres.any(
+            (t) => t.tireSerialNo?.toLowerCase() ==
+            tireSerialNo.text.trim().toLowerCase(),
+      );
+      if (isDuplicate) {
+        tireSerialNoError.value = "This serial number already exists";
+        Get.snackbar(
+          "Error",
+          "This serial number already exists",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
     }
     try {
       AppLoader.show();
@@ -365,7 +347,7 @@ class CreateTyreController extends GetxController {
       AppLoader.hide();
 
       Get.offAll(
-        () => HomeView(),
+            () => HomeView(),
         arguments: {
           "showSuccess": true,
           "serialNo": tireSerialNo.text,
@@ -382,8 +364,7 @@ class CreateTyreController extends GetxController {
   void cancelDialog() {
     AppDialog.showConfirmDialog(
       title: 'Cancel Request',
-      message:
-          'Are you sure you want to cancel? You will \n lose unsaved data.',
+      message: 'Are you sure you want to cancel? You will \n lose unsaved data.',
       onOk: () {
         Get.back();
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -519,9 +500,8 @@ class CreateTyreController extends GetxController {
   }
 
   Future<void> getTireTypes(int tireSizeId) async {
-    final filtered = allTypeList
-        .where((e) => e["tireSizeId"] == tireSizeId)
-        .toList();
+    final filtered =
+    allTypeList.where((e) => e["tireSizeId"] == tireSizeId).toList();
 
     typeList.assignAll(filtered.map((e) => e['typeName'].toString()).toList());
     typeIdList.assignAll(filtered.map((e) => e['typeId'] as int).toList());
@@ -669,7 +649,7 @@ class CreateTyreController extends GetxController {
 
     final dt = DateTime.parse(tyre.registeredDate.toString());
     registeredDate.text =
-        "${dt.day.toString().padLeft(2, '0')}-"
+    "${dt.day.toString().padLeft(2, '0')}-"
         "${dt.month.toString().padLeft(2, '0')}-"
         "${dt.year}";
     registeredDateApi = dt.toUtc().toIso8601String();
@@ -800,7 +780,7 @@ class CreateTyreController extends GetxController {
       if (selectedId != null) selectedId.value = 0;
       print(
         "⚠️ setDropdownById: index $index out of range for nameList "
-        "(length ${nameList.length}). idList.length=${idList.length}, id=$id",
+            "(length ${nameList.length}). idList.length=${idList.length}, id=$id",
       );
       return;
     }

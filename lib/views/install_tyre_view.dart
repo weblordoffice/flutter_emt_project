@@ -1,5 +1,7 @@
 import 'package:emtrack/controllers/install_tyre_controller.dart';
 import 'package:emtrack/controllers/selected_account_controller.dart';
+import 'package:emtrack/routes/app_pages.dart';
+import 'package:emtrack/utils/app_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -7,6 +9,7 @@ class InstallTyreView extends StatelessWidget {
   InstallTyreView({super.key});
 
   final controller = Get.find<InstallTyreController>();
+
   final selectedCtrl = Get.put(SelectedAccountController());
   @override
   Widget build(BuildContext context) {
@@ -26,6 +29,10 @@ class InstallTyreView extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Obx(() {
             final m = controller.model.value;
+            final tyreData = controller.tyreList.isNotEmpty
+                ? controller.tyreList.first
+                : null;
+
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -54,7 +61,8 @@ class InstallTyreView extends StatelessWidget {
                       Divider(),
                       Text("Vehicle ID:"),
                       Text(
-                        "#${m.vehicleId}",
+                        "${controller.vehicleNumber}",
+                        //  "#${m.vehicleId}",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       Divider(),
@@ -63,7 +71,7 @@ class InstallTyreView extends StatelessWidget {
                         style: TextStyle(fontSize: 12),
                       ),
                       Text(
-                        "${m.tireSerialNo}",
+                        "${tyreData?.tireSerialNo}",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       Divider(),
@@ -139,7 +147,7 @@ class InstallTyreView extends StatelessWidget {
                 searchDropdownDialog(
                   hintText: "Wear Condition",
                   controller: controller.wearConditionsId,
-                  nameList: controller.casingConditionList,
+                  nameList: controller.wearConditionsList,
                   idList: controller.wearConditionsIdList,
                   selectedId: controller.selectedWearConditionsId,
                   context: context,
@@ -160,7 +168,11 @@ class InstallTyreView extends StatelessWidget {
                 //_dropdown("Casing Condition", m.casingConditionId.toString()),
                 const SizedBox(height: 12),
 
-                _textBox("List Of Previous Comments", "test21", enabled: false),
+                _textBox(
+                  "List Of Previous Comments",
+                  controller.previousCommentController,
+                  enabled: false,
+                ),
 
                 const SizedBox(height: 12),
 
@@ -175,7 +187,7 @@ class InstallTyreView extends StatelessWidget {
 
                 _textBox(
                   "Comments",
-                  "test31",
+                  controller.commentsController,
                   onChanged: (v) =>
                       controller.model.update((m) => m!.comments = v),
                 ),
@@ -224,7 +236,20 @@ class InstallTyreView extends StatelessWidget {
                       const SizedBox(height: 10),
                       TextButton(
                         onPressed: () {
-                          Get.back(); // cancel action
+                          AppDialog.showConfirmDialog(
+                            title: "Cancel Request",
+
+                            message:
+                                "Are you sure you want to cancel? You will\n lose unsaved data.",
+                            okText: "Yes",
+                            onOk: () {
+                              Get.back(closeOverlays: true);
+
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                Get.offAllNamed(AppPages.HOME);
+                              });
+                            },
+                          );
                         },
                         child: const Text(
                           "Cancel",
@@ -523,7 +548,7 @@ class InstallTyreView extends StatelessWidget {
 
   Widget _textBox(
     String label,
-    String value, {
+    TextEditingController controller, {
     bool enabled = true,
     Function(String)? onChanged,
   }) {
@@ -534,7 +559,7 @@ class InstallTyreView extends StatelessWidget {
         const SizedBox(height: 6),
         TextField(
           enabled: enabled,
-          controller: TextEditingController(text: value),
+          controller: controller,
           maxLines: 3,
           onChanged: onChanged,
           decoration: const InputDecoration(border: OutlineInputBorder()),
@@ -543,3 +568,26 @@ class InstallTyreView extends StatelessWidget {
     );
   }
 }
+
+//   Widget _textBox(
+//     String label,
+//     String value, {
+//     bool enabled = true,
+//     Function(String)? onChanged,
+//   }) {
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         Text(label),
+//         const SizedBox(height: 6),
+//         TextField(
+//           enabled: enabled,
+//           controller: TextEditingController(text: value),
+//           maxLines: 3,
+//           onChanged: onChanged,
+//           decoration: const InputDecoration(border: OutlineInputBorder()),
+//         ),
+//       ],
+//     );
+//   }
+// }

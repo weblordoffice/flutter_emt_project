@@ -1,26 +1,18 @@
 class TyreModel {
-  // 🔹 Existing fields
   final int? tireId;
   final String? tireSerialNo;
-
   final int? vehicleId;
   final String? vehicleNumber;
-
   final int? locationId;
   final String? locationName;
-
   final int? parentAccountId;
-
   final String? brandNo;
-
   final int? typeId;
   final int? sizeId;
   final String? sizeName;
   final String? typeName;
-
   final int? manufacturerId;
   final String? manufacturerName;
-
   final double? currentHours;
   final double? currentMiles;
   final double? currentTreadDepth;
@@ -29,48 +21,35 @@ class TyreModel {
   final double? originalTread;
   final double? purchasedTread;
   final double? removeAt;
-
   final String? mileageType;
-
   final int? dispositionId;
   final String? dispositionName;
   final String? tireStatusName;
   final int? dispositionGroupId;
-
   final bool? isMountToRim;
-
   final int? compoundId;
   final String? compoundName;
-
   final double? recommendedPressure;
   final double? currentPressure;
-
   final String? wheelPosition;
-
   final String? lotNo;
   final String? evaluationNo;
   final String? ratingName;
-
   final int? plyId;
   final int? loadRatingId;
   final int? speedRatingId;
   final int? starRatingId;
-
   final double? costAdjustment;
   final double? purchaseCost;
   final double? casingValue;
   final double? fillCost;
   final double? repairCost;
   final double? retreadCost;
-
   final int? repairCount;
   final int? retreadCount;
-
   final int? fillTypeId;
   final int? typeOfTire;
   final String? compoundCode;
-
-  // 🔹 Inspection fields
   final double? outsideTread;
   final double? insideTread;
   final String? comments;
@@ -138,89 +117,127 @@ class TyreModel {
 
   factory TyreModel.fromJson(Map<String, dynamic> json) {
     return TyreModel(
-      tireId: _toInt(json['tireId']),
-      tireSerialNo: json['tireSerialNo']?.toString(),
-
-      vehicleId: _toInt(json['vehicleId']),
-      vehicleNumber: json['vehicleNumber']?.toString(),
-
-      locationId: _toInt(json['locationId']),
-      locationName: json['locationName']?.toString(),
-
-      parentAccountId: _toInt(json['parentAccountId']),
-
-      brandNo: json['brandNo']?.toString(),
-
-      typeId: _toInt(json['typeId']),
-      sizeId: _toInt(json['sizeId']),
-      sizeName: json['sizeName']?.toString(),
-      typeName: json['typeName']?.toString(),
-
-      manufacturerId: _toInt(json['manufacturerId']),
-      manufacturerName: json['manufacturerName']?.toString(),
-
-      currentHours: _toDouble(json['currentHours']),
-      currentMiles: _toDouble(json['currentMiles']),
-      currentTreadDepth: _toDouble(json['currentTreadDepth']),
-      averageTreadDepth: _toDouble(json['averageTreadDepth']),
-      percentageWorn: _toDouble(json['percentageWorn']),
-      originalTread: _toDouble(json['originalTread']),
-      purchasedTread: _toDouble(json['purchasedTread']),
-      removeAt: _toDouble(json['removeAt']),
-
-      mileageType: json['mileageType']?.toString(),
-
-      dispositionId: _toInt(json['dispositionId']),
-      dispositionName: json['dispositionName']?.toString(),
-      tireStatusName: json['tireStatusName']?.toString(),
+      tireId:             _toInt(json['tireId']),
+      tireSerialNo:       json['tireSerialNo']?.toString(),
+      vehicleId:          _toInt(json['vehicleId']),
+      vehicleNumber:      json['vehicleNumber']?.toString(),
+      locationId:         _toInt(json['locationId']),
+      locationName:       json['locationName']?.toString(),
+      parentAccountId:    _toInt(json['parentAccountId']),
+      brandNo:            json['brandNo']?.toString(),
+      typeId:             _toInt(json['typeId']),
+      sizeId:             _toInt(json['sizeId']),
+      sizeName:           json['sizeName']?.toString(),
+      typeName:           json['typeName']?.toString(),
+      manufacturerId:     _toInt(json['manufacturerId']),
+      manufacturerName:   json['manufacturerName']?.toString(),
+      currentHours:       _toDouble(json['currentHours']),
+      currentMiles:       _toDouble(json['currentMiles']),
+      currentTreadDepth:  _toDouble(json['currentTreadDepth']),
+      averageTreadDepth:  _toDouble(json['averageTreadDepth']),
+      percentageWorn:     _toDouble(json['percentageWorn']),
+      originalTread:      _toDouble(json['originalTread']),
+      purchasedTread:     _toDouble(json['purchasedTread']),
+      removeAt:           _toDouble(json['removeAt']),
+      mileageType:        json['mileageType']?.toString(),
+      dispositionId:      _toInt(json['dispositionId']),
+      dispositionName:    json['dispositionName']?.toString(),
+      tireStatusName:     json['tireStatusName']?.toString(),
       dispositionGroupId: _toInt(json['dispositionGroupId']),
-
-      isMountToRim: json['isMountToRim'] as bool?,
-
-      compoundId: _toInt(json['compoundId']),
-      compoundName: json['compoundName']?.toString(),
-      compoundCode: json['compoundCode']?.toString(),
-
+      isMountToRim:       json['isMountToRim'] as bool?,
+      compoundId:         _toInt(json['compoundId']),
+      compoundName:       json['compoundName']?.toString(),
+      compoundCode:       json['compoundCode']?.toString(),
       recommendedPressure: _toDouble(json['recommendedPressure']),
-      currentPressure: _toDouble(json['currentPressure']),
-
-      wheelPosition: json['wheelPosition']?.toString(),
-      lotNo: json['lotNo']?.toString(),
-      evaluationNo: json['evaluationNo']?.toString(),
-      ratingName: json['ratingName']?.toString(),
-
-      plyId: _toInt(json['plyId']),
-      loadRatingId: _toInt(json['loadRatingId']),
-      speedRatingId: _toInt(json['speedRatingId']),
-      starRatingId: _toInt(json['starRatingId']),
-
-      costAdjustment: _toDouble(json['costAdjustment']),
-      purchaseCost: _toDouble(json['purchaseCost']),
-      casingValue: _toDouble(json['casingValue']),
-      fillCost: _toDouble(json['fillCost']),
-      repairCost: _toDouble(json['repairCost']),
-      retreadCost: _toDouble(json['retreadCost']),
-
-      repairCount: _toInt(json['repairCount']),
-      retreadCount: _toInt(json['retreadCount']),
-
-      fillTypeId: _toInt(json['fillTypeId']),
-      typeOfTire: _toInt(json['typeOfTire']),
-
-      // 🔹 Inspection fields
-      outsideTread: _toDouble(json['outsideTread']),
-      insideTread: _toDouble(json['insideTread']),
-      comments: json['comments']?.toString(),
-      casingConditionId: _toInt(json['casingConditionId']),
-      wearConditionId: _toInt(json['wearConditionId']),
+      currentPressure:    _toDouble(json['currentPressure']),
+      wheelPosition:      json['wheelPosition']?.toString(),
+      lotNo:              json['lotNo']?.toString(),
+      evaluationNo:       json['evaluationNo']?.toString(),
+      ratingName:         json['ratingName']?.toString(),
+      plyId:              _toInt(json['plyId']),
+      loadRatingId:       _toInt(json['loadRatingId']),
+      speedRatingId:      _toInt(json['speedRatingId']),
+      starRatingId:       _toInt(json['starRatingId']),
+      costAdjustment:     _toDouble(json['costAdjustment']),
+      purchaseCost:       _toDouble(json['purchaseCost']),
+      casingValue:        _toDouble(json['casingValue']),
+      fillCost:           _toDouble(json['fillCost']),
+      repairCost:         _toDouble(json['repairCost']),
+      retreadCost:        _toDouble(json['retreadCost']),
+      repairCount:        _toInt(json['repairCount']),
+      retreadCount:       _toInt(json['retreadCount']),
+      fillTypeId:         _toInt(json['fillTypeId']),
+      typeOfTire:         _toInt(json['typeOfTire']),
+      outsideTread:       _toDouble(json['outsideTread']),
+      insideTread:        _toDouble(json['insideTread']),
+      comments:           json['comments']?.toString(),
+      casingConditionId:  _toInt(json['casingConditionId']),
+      wearConditionId:    _toInt(json['wearConditionId']),
     );
   }
+
+  // ✅ toJson — SQLite save karne ke liye
+  Map<String, dynamic> toJson() {
+    return {
+      'tireId':             tireId,
+      'tireSerialNo':       tireSerialNo,
+      'vehicleId':          vehicleId,
+      'vehicleNumber':      vehicleNumber,
+      'locationId':         locationId,
+      'locationName':       locationName,
+      'parentAccountId':    parentAccountId,
+      'brandNo':            brandNo,
+      'typeId':             typeId,
+      'sizeId':             sizeId,
+      'sizeName':           sizeName,
+      'typeName':           typeName,
+      'manufacturerId':     manufacturerId,
+      'manufacturerName':   manufacturerName,
+      'currentHours':       currentHours,
+      'currentMiles':       currentMiles,
+      'currentTreadDepth':  currentTreadDepth,
+      'averageTreadDepth':  averageTreadDepth,
+      'percentageWorn':     percentageWorn,
+      'originalTread':      originalTread,
+      'purchasedTread':     purchasedTread,
+      'removeAt':           removeAt,
+      'mileageType':        mileageType,
+      'dispositionId':      dispositionId,
+      'dispositionName':    dispositionName,
+      'tireStatusName':     tireStatusName,
+      'dispositionGroupId': dispositionGroupId,
+      'isMountToRim':       isMountToRim == true ? 1 : 0,
+      'compoundId':         compoundId,
+      'compoundName':       compoundName,
+      'compoundCode':       compoundCode,
+      'recommendedPressure': recommendedPressure,
+      'currentPressure':    currentPressure,
+      'wheelPosition':      wheelPosition,
+      'lotNo':              lotNo,
+      'evaluationNo':       evaluationNo,
+      'ratingName':         ratingName,
+      'plyId':              plyId,
+      'loadRatingId':       loadRatingId,
+      'speedRatingId':      speedRatingId,
+      'starRatingId':       starRatingId,
+      'costAdjustment':     costAdjustment,
+      'purchaseCost':       purchaseCost,
+      'casingValue':        casingValue,
+      'fillCost':           fillCost,
+      'repairCost':         repairCost,
+      'retreadCost':        retreadCost,
+      'repairCount':        repairCount,
+      'retreadCount':       retreadCount,
+      'fillTypeId':         fillTypeId,
+      'typeOfTire':         typeOfTire,
+      'outsideTread':       outsideTread,
+      'insideTread':        insideTread,
+      'comments':           comments,
+      'casingConditionId':  casingConditionId,
+      'wearConditionId':    wearConditionId,
+    };
+  }
 }
-
-// int? _toInt(dynamic v) => v == null ? null : int.tryParse(v.toString());
-// double? _toDouble(dynamic v) =>
-//     v == null ? null : double.tryParse(v.toString());
-
 
 int? _toInt(dynamic v) {
   if (v == null) return null;

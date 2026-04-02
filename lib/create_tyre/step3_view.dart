@@ -54,84 +54,6 @@ class _Step3ViewState extends State<Step3View> {
     super.dispose();
   }
 
-  String? _validateRemoveAt(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return "Remove at is required";
-    }
-
-    final removeAt = double.tryParse(value);
-    if (removeAt == null) {
-      return "Please enter a valid number";
-    }
-
-    final original = double.tryParse(c.originalTread.text);
-    if (original != null && removeAt >= original) {
-      return "Remove at must be less than original tread";
-    }
-
-    // Trigger validation for Outside and Inside
-    _validateOutsideInside();
-
-    return null;
-  }
-
-  void _validateOutsideInside() {
-    final original = double.tryParse(c.originalTread.text);
-    final removeAt = double.tryParse(c.removeAt.text);
-    final outside = double.tryParse(c.outsideTread.text);
-    final inside = double.tryParse(c.insideTread.text);
-
-    if (original != null && removeAt != null) {
-      // Validate Outside
-      if (outside != null && outside <= removeAt) {
-        // Outside validation warning will be shown in percentage calculation
-      }
-
-      // Validate Inside
-      if (inside != null && inside <= removeAt) {
-        // Inside validation warning will be shown in percentage calculation
-      }
-    }
-
-    _calculate();
-  }
-
-  String? validateOutside(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return "Outside tread is required";
-    }
-
-    final outside = double.tryParse(value);
-    if (outside == null) {
-      return "Please enter a valid number";
-    }
-
-    final removeAt = double.tryParse(c.removeAt.text);
-    if (removeAt != null && outside <= removeAt) {
-      return "Outside tread must be greater than remove at value";
-    }
-
-    return null;
-  }
-
-  String? validateInside(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return "Inside tread is required";
-    }
-
-    final inside = double.tryParse(value);
-    if (inside == null) {
-      return "Please enter a valid number";
-    }
-
-    final removeAt = double.tryParse(c.removeAt.text);
-    if (removeAt != null && inside <= removeAt) {
-      return "Inside tread must be greater than remove at value";
-    }
-
-    return null;
-  }
-
   // ── % Worn calculation ────────────────────────────────────────────
   void _calculate() {
     final original = double.tryParse(c.originalTread.text);
@@ -145,8 +67,8 @@ class _Step3ViewState extends State<Step3View> {
 
     setState(() {
       if (outside != null) {
-        outsidePercen = ((1 - (outside - removeAt) / denominator) * 100)
-            .roundToDouble();
+        outsidePercen =
+            ((1 - (outside - removeAt) / denominator) * 100).roundToDouble();
         outsideWarn = outsidePercen! > 100 || outsidePercen! < 0;
       } else {
         outsidePercen = 0;
@@ -154,8 +76,8 @@ class _Step3ViewState extends State<Step3View> {
       }
 
       if (inside != null) {
-        insidePercent = ((1 - (inside - removeAt) / denominator) * 100)
-            .roundToDouble();
+        insidePercent =
+            ((1 - (inside - removeAt) / denominator) * 100).roundToDouble();
         insideWarn = insidePercent! > 100 || insidePercent! < 0;
       } else {
         insidePercent = 0;
@@ -196,10 +118,10 @@ class _Step3ViewState extends State<Step3View> {
             controller: c.removeAt,
             focusNode: _removeAtFocusNode,
             keyboardType: TextInputType.number,
-            validator: _validateRemoveAt,
+            validator: _required,
             autovalidateMode: AutovalidateMode.onUserInteraction,
             inputFormatters: [_decimalOnlyFormatter()], // FIX 4
-            onChanged: (_) => _validateOutsideInside(),
+            onChanged: (_) => _calculate(),
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
               focusedBorder: const OutlineInputBorder(
@@ -210,13 +132,13 @@ class _Step3ViewState extends State<Step3View> {
               // _removeAtText which is kept in sync via addListener
               suffixIcon: _removeAtText.isNotEmpty
                   ? IconButton(
-                      icon: const Icon(Icons.close, color: Colors.black),
-                      onPressed: () {
-                        c.removeAt.clear();
-                        _removeAtFocusNode.requestFocus();
-                        _calculate();
-                      },
-                    )
+                icon: const Icon(Icons.close, color: Colors.black),
+                onPressed: () {
+                  c.removeAt.clear();
+                  _removeAtFocusNode.requestFocus();
+                  _calculate();
+                },
+              )
                   : null,
             ),
           ),
@@ -236,8 +158,8 @@ class _Step3ViewState extends State<Step3View> {
           controller: c.outsideTread,
           percent: outsidePercen ?? 0,
           warn: outsideWarn,
-          validator: validateOutside,
-          onChanged: (_) => _validateOutsideInside(),
+          validator: _required,
+          onChanged: (_) => _calculate(),
         ),
 
         // ── Inside (c) ───────────────────────────────────────────────
@@ -246,8 +168,8 @@ class _Step3ViewState extends State<Step3View> {
           controller: c.insideTread,
           percent: insidePercent ?? 0,
           warn: insideWarn,
-          validator: validateInside,
-          onChanged: (_) => _validateOutsideInside(),
+          validator: _required,
+          onChanged: (_) => _calculate(),
         ),
 
         const SizedBox(height: 24),
@@ -319,16 +241,20 @@ class _Step3ViewState extends State<Step3View> {
             inputFormatters: [_decimalOnlyFormatter()], // FIX 4
             decoration: InputDecoration(
               border: OutlineInputBorder(
-                borderSide: BorderSide(color: warn ? Colors.red : Colors.grey),
+                borderSide:
+                BorderSide(color: warn ? Colors.red : Colors.grey),
               ),
               enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: warn ? Colors.red : Colors.grey),
+                borderSide:
+                BorderSide(color: warn ? Colors.red : Colors.grey),
               ),
               focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: warn ? Colors.red : Colors.grey),
+                borderSide:
+                BorderSide(color: warn ? Colors.red : Colors.grey),
               ),
               // Show "% worn" only when NOT in warning state
-              suffixText: (warn && controller.text.trim().isNotEmpty)
+              suffixText:
+              (warn && controller.text.trim().isNotEmpty)
                   ? null
                   : "${percent.toStringAsFixed(0)}% worn",
               suffixStyle: const TextStyle(
@@ -344,7 +270,7 @@ class _Step3ViewState extends State<Step3View> {
               padding: const EdgeInsets.only(top: 6),
               child: Text(
                 "${percent.toInt()}% worn - Warning, you are decreasing "
-                "tread on a tire past it's set pull point.",
+                    "tread on a tire past it's set pull point.",
                 style: const TextStyle(
                   color: Colors.red,
                   fontSize: 12,
@@ -389,12 +315,10 @@ class _Step3ViewState extends State<Step3View> {
   Widget _label(String text, {bool required = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        children: [
-          Text(text),
-          if (required) const Text(" *", style: TextStyle(color: Colors.red)),
-        ],
-      ),
+      child: Row(children: [
+        Text(text),
+        if (required) const Text(" *", style: TextStyle(color: Colors.red)),
+      ]),
     );
   }
 
@@ -413,18 +337,11 @@ class _Step3ViewState extends State<Step3View> {
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: Colors.red,
-          ),
+              borderRadius: BorderRadius.circular(10), color: Colors.red),
           child: Center(
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
+              child: Text(text,
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold))),
         ),
       ),
     );
@@ -438,18 +355,12 @@ class _Step3ViewState extends State<Step3View> {
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.grey, width: 1),
-          ),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey, width: 1)),
           child: Center(
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
+              child: Text(text,
+                  style: const TextStyle(
+                      color: Colors.red, fontWeight: FontWeight.bold))),
         ),
       ),
     );
