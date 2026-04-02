@@ -67,6 +67,7 @@ class VehicleInspeController extends GetxController {
   void addInstalledTyreLocally(TyreModel tyreModel) {
     try {
       tires.removeWhere(
+<<<<<<< HEAD
             (t) => t.wheelPosition?.trim() == tyreModel.wheelPosition?.trim(),
       );
 
@@ -86,12 +87,39 @@ class VehicleInspeController extends GetxController {
         originalTread:    tyreModel.originalTread,
         sizeName:         tyreModel.sizeName,
         typeName:         tyreModel.typeName,
+=======
+        (t) => t.wheelPosition?.trim() == tyreModel.wheelPosition?.trim(),
+      );
+
+      final installedTire = InstalledTire(
+        tireId: tyreModel.tireId,
+        tireSerialNo: tyreModel.tireSerialNo,
+        wheelPosition: tyreModel.wheelPosition,
+        currentTreadDepth: tyreModel.currentTreadDepth,
+        currentPressure: tyreModel.currentPressure,
+        currentHours: tyreModel.currentHours,
+        outsideTread: tyreModel.outsideTread,
+        insideTread: tyreModel.insideTread,
+        dispositionId: tyreModel.dispositionId,
+        casingConditionId: tyreModel.casingConditionId,
+        wearConditionId: tyreModel.wearConditionId,
+        percentageWorn: tyreModel.percentageWorn,
+        originalTread: tyreModel.originalTread,
+        sizeName: tyreModel.sizeName,
+        typeName: tyreModel.typeName,
+>>>>>>> 3b2ba99 (Save local changes before pulling)
         manufacturerName: tyreModel.manufacturerName,
       );
 
       tires.add(installedTire);
 
+<<<<<<< HEAD
       print("✅ Locally added tire to diagram: ${tyreModel.tireSerialNo} @ ${tyreModel.wheelPosition}");
+=======
+      print(
+        "✅ Locally added tire to diagram: ${tyreModel.tireSerialNo} @ ${tyreModel.wheelPosition}",
+      );
+>>>>>>> 3b2ba99 (Save local changes before pulling)
       print("📊 Total installed tires now: ${tires.length}");
     } catch (e) {
       print("⚠️ addInstalledTyreLocally error: $e");
@@ -123,13 +151,18 @@ class VehicleInspeController extends GetxController {
         return;
       }
 
+<<<<<<< HEAD
       bool allSuccess    = true;
+=======
+      bool allSuccess = true;
+>>>>>>> 3b2ba99 (Save local changes before pulling)
       List<String> failedTires = [];
 
       for (var tire in tires) {
         final String action = _getTireAction(tire);
 
         final vehicleData = {
+<<<<<<< HEAD
           "action":           action,
           "inspectionDate":   DateTime.now().toIso8601String(),
           "locationId":       int.tryParse(locationId ?? "0") ?? 0,
@@ -163,6 +196,41 @@ class VehicleInspeController extends GetxController {
           "hoursAdjustToTire": 0.0,
           "milesAdjustToTire": 0.0,
           "isMobInstall":     false,
+=======
+          "action": action,
+          "inspectionDate": DateTime.now().toIso8601String(),
+          "locationId": int.tryParse(locationId ?? "0") ?? 0,
+          "parentAccountId": int.tryParse(parentAccountId ?? "0") ?? 0,
+          "vehicleId": model!.vehicleId ?? 0,
+          "inspectionId": 0,
+          "tireId": tire.tireId ?? 0,
+          "currentHours": double.tryParse(hoursCtrl.text) ?? 0.0,
+          "currentMiles": tire.currentMiles ?? 0.0,
+          "imagesLocation": "",
+          "tireSerialNo": tire.tireSerialNo ?? "",
+          "brandNumber": tire.brandNo ?? "",
+          "originalTread": tire.originalTread ?? 0.0,
+          "removeAt": tire.removeAt ?? 0.0,
+          "outsideTread": tire.outsideTread ?? 0.0,
+          "middleTread": tire.middleTread ?? 0.0,
+          "insideTread": tire.insideTread ?? 0.0,
+          "currentTreadDepth": tire.currentTreadDepth ?? 0.0,
+          "currentPressure": tire.currentPressure ?? 0.0,
+          "pressureUnitId": tire.pressureType ?? 0,
+          "casingConditionId": tire.casingConditionId ?? 0,
+          "wearConditionId": tire.wearConditionId ?? 0,
+          "comments": commentsCtrl.text.trim(),
+          "removalReasonId": tire.removalReasonId ?? 0,
+          "dispositionId": tire.dispositionId ?? 0,
+          "rimDispositionId": tire.dispositionId ?? 0,
+          "wheelPosition": tire.wheelPosition ?? "",
+          "mountedRimId": tire.mountedRimId ?? 0,
+          "createdBy": parentAccountName ?? "",
+          "pressureType": tire.pressureType ?? "",
+          "hoursAdjustToTire": 0.0,
+          "milesAdjustToTire": 0.0,
+          "isMobInstall": false,
+>>>>>>> 3b2ba99 (Save local changes before pulling)
         };
 
         bool result = await service.submitInspection(vehicleData: vehicleData);
@@ -217,7 +285,14 @@ class VehicleInspeController extends GetxController {
   Future<void> pickImageMobile(ImageSource source) async {
     try {
       if (!Platform.isAndroid && !Platform.isIOS) return;
+<<<<<<< HEAD
       final XFile? image = await _picker.pickImage(source: source, imageQuality: 80);
+=======
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        imageQuality: 80,
+      );
+>>>>>>> 3b2ba99 (Save local changes before pulling)
       if (image != null) uploadedImages.add(File(image.path));
     } catch (e) {
       debugPrint('Mobile pick error: $e');

@@ -2,7 +2,11 @@
   "@@locale": "en",
 
   "homeTitle": "Home",
+<<<<<<< HEAD
   "greeting": "Welcome!",
+=======
+  "greeting": "Welcome",
+>>>>>>> 3b2ba99 (Save local changes before pulling)
   "settings": "Settings",
 
   "language": "Language",

@@ -175,12 +175,13 @@ class GrandparentAccountView extends StatelessWidget {
         padding: EdgeInsets.all(16),
         child: Column(
           children: [
-            DropdownButtonFormField(
-              isExpanded: true,
-              decoration: InputDecoration(
-                labelText: "Parent Account",
-                border: OutlineInputBorder(),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Parent Account",
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
+<<<<<<< HEAD
               items: c.parentAccounts
                   .map(
                     (e) => DropdownMenuItem(
@@ -190,16 +191,24 @@ class GrandparentAccountView extends StatelessWidget {
                   )
                   .toList(),
               onChanged: (v) => c.selectedParentId.value = v as int? ?? 0,
+=======
+            ),
+            const SizedBox(height: 6),
+            InkWell(
+              onTap: () => _openParentAccountDialog(),
+              child: _fakeDropdown(c.selectedParentName.value),
+>>>>>>> 3b2ba99 (Save local changes before pulling)
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
-            DropdownButtonFormField(
-              isExpanded: true,
-              decoration: InputDecoration(
-                labelText: "Grandparent Account",
-                border: OutlineInputBorder(),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Grandparent Account",
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
+<<<<<<< HEAD
               items: c.grandparentAccounts
                   .map(
                     (e) => DropdownMenuItem(
@@ -209,6 +218,13 @@ class GrandparentAccountView extends StatelessWidget {
                   )
                   .toList(),
               onChanged: (v) => c.selectedGrandparentId.value = v as int? ?? 0,
+=======
+            ),
+            const SizedBox(height: 6),
+            InkWell(
+              onTap: () => _openGrandparentAccountDialog(),
+              child: _fakeDropdown(c.selectedGrandparentName.value),
+>>>>>>> 3b2ba99 (Save local changes before pulling)
             ),
 
             const SizedBox(height: 20),
@@ -221,6 +237,188 @@ class GrandparentAccountView extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _fakeDropdown(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade400),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              text,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 15),
+            ),
+          ),
+          const Icon(Icons.arrow_drop_down, color: Colors.grey),
+        ],
+      ),
+    );
+  }
+
+  void _openParentAccountDialog() {
+    final searchCtrl = TextEditingController();
+    // ✅ Use RxList properly
+    final RxList<Map<String, dynamic>> filtered = RxList<Map<String, dynamic>>(
+      [],
+    );
+    filtered.assignAll(c.parentAccounts);
+
+    Get.dialog(
+      Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppColors.primary,
+          title: const Text(
+            "Select Parent Account",
+            style: TextStyle(color: Colors.white, fontSize: 16),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: Get.back,
+          ),
+        ),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: TextField(
+                controller: searchCtrl,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search),
+                  hintText: "Filter Parent Account",
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (v) {
+                  filtered.assignAll(
+                    c.parentAccounts
+                        .where(
+                          (e) => e['name'].toString().toLowerCase().contains(
+                            v.toLowerCase(),
+                          ),
+                        )
+                        .toList(),
+                  );
+                },
+              ),
+            ),
+            Expanded(
+              child: Obx(
+                () => filtered.isEmpty
+                    ? const Center(child: Text("No accounts found"))
+                    : ListView.separated(
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (_, i) {
+                          final item = filtered[i];
+                          return ListTile(
+                            title: Text(
+                              "${item['id']} : ${item['name'].toString().toUpperCase()}",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            onTap: () {
+                              c.selectedParentId.value = item['id'];
+                              c.selectedParentName.value = item['name'];
+                              Get.back();
+                            },
+                          );
+                        },
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  void _openGrandparentAccountDialog() {
+    final searchCtrl = TextEditingController();
+    // ✅ Use RxList properly
+    final RxList<Map<String, dynamic>> filtered = RxList<Map<String, dynamic>>(
+      [],
+    );
+    filtered.assignAll(c.grandparentAccounts);
+
+    Get.dialog(
+      Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppColors.primary,
+          title: const Text(
+            "Select Grandparent Account",
+            style: TextStyle(color: Colors.white, fontSize: 16),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: Get.back,
+          ),
+        ),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: TextField(
+                controller: searchCtrl,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search),
+                  hintText: "Filter Grandparent Account",
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (v) {
+                  filtered.assignAll(
+                    c.grandparentAccounts
+                        .where(
+                          (e) => e['name'].toString().toLowerCase().contains(
+                            v.toLowerCase(),
+                          ),
+                        )
+                        .toList(),
+                  );
+                },
+              ),
+            ),
+            Expanded(
+              child: Obx(
+                () => filtered.isEmpty
+                    ? const Center(child: Text("No accounts found"))
+                    : ListView.separated(
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (_, i) {
+                          final item = filtered[i];
+                          return ListTile(
+                            title: Text(
+                              "${item['id']} : ${item['name'].toString().toUpperCase()}",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            onTap: () {
+                              c.selectedGrandparentId.value = item['id'];
+                              c.selectedGrandparentName.value = item['name'];
+                              Get.back();
+                            },
+                          );
+                        },
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
     );
   }
 

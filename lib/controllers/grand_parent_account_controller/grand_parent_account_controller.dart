@@ -33,6 +33,8 @@ class GrandparentAccountController extends GetxController {
   /// Step-2 dropdown selections
   RxInt selectedParentId = 0.obs;
   RxInt selectedGrandparentId = 0.obs;
+  RxString selectedParentName = 'Select Parent Account'.obs;
+  RxString selectedGrandparentName = 'Select Grandparent Account'.obs;
 
   /// Dummy dropdown data (API se ayega)
   RxList<Map<String, dynamic>> parentAccounts = <Map<String, dynamic>>[].obs;
@@ -112,21 +114,22 @@ class GrandparentAccountController extends GetxController {
   }
   Future<void> fetchParentAccounts() async {
     try {
+      // ✅ Added /0?timeStamp=0 as required by this endpoint
       final response = await ApiService.getApi(
-        endpoint: ApiConstants.getParentAccountList,
+        endpoint: "${ApiConstants.getParentAccountList}/0?timeStamp=0",
       );
 
-      if (response['model'] != null && response['model'].length > 0) {
+      if (response != null && response['model'] != null) {
         final List data = response['model'];
-
         parentAccounts.value = data.map<Map<String, dynamic>>((item) {
           return {"id": item["parentAccountId"], "name": item["accountName"]};
         }).toList();
+        print("✅ Parent Accounts fetched: ${parentAccounts.length}");
       } else {
-        print("Error: ${response.statusCode}");
+        print("⚠️ No Parent Account data found in response");
       }
     } catch (e) {
-      print("Exception: $e");
+      print("❌ fetchParentAccounts error: $e");
     }
   }
 
@@ -136,20 +139,20 @@ class GrandparentAccountController extends GetxController {
         endpoint: ApiConstants.getGrandparentAccountList,
       );
 
-      if (response['model'] != null && response['model'].length > 0) {
+      if (response != null && response['model'] != null) {
         final List data = response['model'];
-
         grandparentAccounts.value = data.map<Map<String, dynamic>>((item) {
           return {
             "id": item["grandParentAccountId"],
             "name": item["grandParentAccountName"],
           };
         }).toList();
+        print("✅ Grandparent Accounts fetched: ${grandparentAccounts.length}");
       } else {
-        print("Error: ${response.statusCode}");
+        print("⚠️ No Grandparent Account data found in response");
       }
     } catch (e) {
-      print("Exception: $e");
+      print("❌ fetchGrandParentAccounts error: $e");
     }
   }
 }

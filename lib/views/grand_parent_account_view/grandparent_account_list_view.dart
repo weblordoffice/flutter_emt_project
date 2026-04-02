@@ -15,8 +15,12 @@ class GrandparentAccountListView extends StatelessWidget {
         leading: BackButton(color: Colors.white),
         backgroundColor: AppColors.primary,
         title: const Text(
-          "GRANDPARENT ACCOUNT OPTIONS",
-          style: TextStyle(color: Colors.white, fontSize: 17),
+          "GRANDPARENT ACCOUNT LIST",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
       ),
@@ -33,12 +37,30 @@ class GrandparentAccountListView extends StatelessWidget {
   /// 🔍 Search
   Widget _searchBar() {
     return Padding(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: TextField(
         decoration: InputDecoration(
-          hintText: "Search Grandparent",
-          prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          hintText: "Search Grandparent Account",
+          hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+          prefixIcon: const Icon(Icons.search, color: Colors.grey),
+          filled: true,
+          fillColor: Colors.grey[100],
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.red, width: 1),
+          ),
         ),
         onChanged: c.onSearch,
       ),
@@ -61,48 +83,79 @@ class GrandparentAccountListView extends StatelessWidget {
 
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                elevation: 2,
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text(
+                        a.name.toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            "ID: ${a.id}",
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.location_on_outlined,
+                                size: 16,
+                                color: Colors.grey,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                "1 Location", // API doesn't provide this yet, using placeholder as per requirement
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.check_circle,
-                            color: a.isActive ? Colors.green : Colors.grey,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            a.isActive ? "Active" : "Inactive",
-                            style: TextStyle(
-                              color: a.isActive ? Colors.green : Colors.grey,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: a.isActive
+                                  ? Colors.green.withOpacity(0.1)
+                                  : Colors.grey.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              a.isActive ? "ACTIVE" : "INACTIVE",
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: a.isActive ? Colors.green : Colors.grey,
+                              ),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 6),
-
                       Text(
-                        a.name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                        "Created By: ${a.createdBy.isEmpty ? 'N/A' : a.createdBy}",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[500],
+                          fontStyle: FontStyle.italic,
                         ),
                       ),
-
-                      const SizedBox(height: 6),
-                      _row("Owned By", a.ownedBy),
-                      _row("Created By", a.createdBy),
-                      _row("Create Date", a.createDate),
-                      _row("Updated By", a.updatedBy),
-                      _row("Update Date", a.updateDate),
                     ],
                   ),
                 ),
@@ -112,13 +165,6 @@ class GrandparentAccountListView extends StatelessWidget {
         ],
       );
     });
-  }
-
-  Widget _row(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 2),
-      child: Text("$label: $value", style: const TextStyle(color: Colors.grey)),
-    );
   }
 
   /// ⬅️ Pagination
