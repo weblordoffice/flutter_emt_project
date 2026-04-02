@@ -177,11 +177,7 @@ class GrandparentAccountView extends StatelessWidget {
           children: [
             const Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                "Parent Account",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-<<<<<<< HEAD
+
               items: c.parentAccounts
                   .map(
                     (e) => DropdownMenuItem(
@@ -192,22 +188,21 @@ class GrandparentAccountView extends StatelessWidget {
                   .toList(),
               onChanged: (v) => c.selectedParentId.value = v as int? ?? 0,
 =======
-            ),
+            ,
+              child: Text(
+                "Parent Account",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              )),
             const SizedBox(height: 6),
             InkWell(
               onTap: () => _openParentAccountDialog(),
               child: _fakeDropdown(c.selectedParentName.value),
->>>>>>> 3b2ba99 (Save local changes before pulling)
             ),
 
             const SizedBox(height: 16),
 
             const Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                "Grandparent Account",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
 <<<<<<< HEAD
               items: c.grandparentAccounts
                   .map(
@@ -219,7 +214,11 @@ class GrandparentAccountView extends StatelessWidget {
                   .toList(),
               onChanged: (v) => c.selectedGrandparentId.value = v as int? ?? 0,
 =======
-            ),
+            ,
+              child: Text(
+                "Grandparent Account",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              )),
             const SizedBox(height: 6),
             InkWell(
               onTap: () => _openGrandparentAccountDialog(),
